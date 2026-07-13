@@ -427,3 +427,21 @@ TRAE AI 创造力大赛
   - 开发流程（需 `npm install` + `npm run dev`，不再是直接打开 HTML）
 - **已落地**：Session 1 完成项目初始化，144 个依赖包安装成功，dev server 正常运行在 http://localhost:5173/
 - **风险评估**：构建后产物仍是静态文件，不影响参赛提交。需要提前确认部署方案（在线地址 vs HTML打包）
+
+### 变更 004 — Demo 部署上线 + 报名帖地址补充
+- **变更时间**：2026-07-13
+- **变更类型**：部署上线 + 报名帖定稿
+- **变更内容**：
+  1. **代码推送 GitHub**：推送到 https://github.com/lsyoulin/ai-health（Public 仓库，main 分支）
+  2. **Vercel 部署成功**：在线体验地址 https://ai-health-chi-nine.vercel.app/
+  3. **修复 TS 构建错误**：清理 4 个未使用变量（addHistory / FOODS / getRiskLevel / getRiskLabel / demoResult），Vercel 构建通过
+  4. **参赛帖地址补充**：参赛帖中的"Demo 体验地址"与"GitHub 仓库"已填入正式地址
+- **部署细节**：
+  - 部署方式：GitHub 仓库连接 Vercel（邮箱注册），push 自动触发部署
+  - 构建命令：`npm run build`（tsc -b && vite build）
+  - 构建产物：dist/index.html + dist/assets/（CSS 21.3KB + JS 219.6KB，gzip 后 75KB）
+  - 首屏验证：通过 WebFetch 抓取首页正常渲染（品牌主张 + 预测环 + 入口卡片齐全）
+- **影响范围**：
+  - 参赛帖「Demo 体验地址」与「GitHub 仓库」字段从待补充转为正式地址
+  - 部署链路打通：git push → GitHub → Vercel 自动部署
+- **下一步**：补充 Session ID（≥3个）与关键步骤截图（≥3张），完成参赛帖所有必填项
