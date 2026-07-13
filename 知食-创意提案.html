@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知食 · 让每一口都被懂 — 慢病饮食AI伙伴 · 创意方案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF6EE;
+    --ink: #1A1F1C;
+    --amber: #D4A574;
+    --amber-deep: #A07045;
+    --moss: #1F3A2E;
+    --moss-mid: #3F6E54;
+    --moss-soft: #88A598;
+    --danger: #C8553D;
+    --warning: #E6B655;
+    --safe: #5C8A5C;
+    --paper-edge: #E8DCC4;
+  }
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Sans SC', -apple-system, sans-serif;
+    line-height: 1.7;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(31, 58, 46, 0.05) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+
+  /* ========== Hero ========== */
+  .hero {
+    padding: 100px 0 80px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--paper-edge);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--moss);
+    color: var(--paper);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+  }
+  .badge .dot {
+    width: 6px; height: 6px;
+    background: var(--amber);
+    border-radius: 50%;
+    animation: breathe 3s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.3); }
+  }
+  h1.title {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 900;
+    font-size: clamp(72px, 10vw, 128px);
+    line-height: 0.92;
+    color: var(--moss);
+    letter-spacing: -0.04em;
+  }
+  .slogan {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 24px;
+    color: var(--amber-deep);
+    margin-top: 16px;
+    letter-spacing: 0.05em;
+  }
+  .tagline {
+    font-size: 17px;
+    color: var(--ink);
+    margin-top: 28px;
+    max-width: 520px;
+    line-height: 1.8;
+  }
+  .tagline strong {
+    color: var(--moss);
+    font-weight: 700;
+  }
+  .quote {
+    margin-top: 24px;
+    padding-left: 16px;
+    border-left: 2px solid var(--amber);
+    font-style: italic;
+    color: var(--amber-deep);
+    font-size: 14px;
+    max-width: 520px;
+  }
+  .quote s { opacity: 0.55; }
+
+  /* Hero 右侧 - 预测环演示 */
+  .ring-demo {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #D4A574 0%, #A07045 100%);
+    box-shadow: 0 30px 60px -15px rgba(31, 58, 46, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-inner {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .ring-label {
+    font-size: 11px;
+    color: var(--amber-deep);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .ring-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 72px;
+    font-weight: 700;
+    color: var(--moss);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .ring-unit { font-size: 14px; color: var(--moss-mid); margin-top: 6px; }
+  .ring-status {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(200, 85, 61, 0.12);
+    color: var(--danger);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .ring-status::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--danger);
+  }
+
+  /* ========== Section 通用 ========== */
+  section { padding: 80px 0; border-bottom: 1px solid var(--paper-edge); }
+  .section-header { margin-bottom: 48px; }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--amber-deep);
+    letter-spacing: 0.2em;
+  }
+  .section-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--moss);
+    margin-top: 8px;
+    letter-spacing: -0.02em;
+  }
+  .section-desc {
+    color: var(--moss-mid);
+    font-size: 16px;
+    margin-top: 12px;
+    max-width: 640px;
+  }
+
+  /* ========== 问题陈述 ========== */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .problem-card {
+    background: var(--paper);
+    border: 1px solid var(--paper-edge);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .problem-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(31, 58, 46, 0.15);
+  }
+  .problem-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--amber);
+    line-height: 1;
+  }
+  .problem-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--moss);
+    margin: 12px 0 8px;
+  }
+  .problem-desc {
+    font-size: 14px;
+    color: var(--moss-mid);
+    line-height: 1.7;
+  }
+
+  /* ========== 创意介绍 ========== */
+  .idea-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .idea-block h3 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px;
+    color: var(--moss);
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .idea-block p { color: var(--ink); font-size: 15px; margin-bottom: 12px; }
+  .product-shape {
+    background: var(--moss);
+    color: var(--paper);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .product-shape::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212, 165, 116, 0.3), transparent);
+  }
+  .product-shape h3 { color: var(--amber); }
+  .product-shape p { color: rgba(250, 246, 238, 0.9); }
+  .product-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(212, 165, 116, 0.2);
+    color: var(--amber);
+    border-radius: 999px;
+    font-size: 12px;
+    margin: 4px 4px 0 0;
+  }
+
+  /* ========== 用户场景 ========== */
+  .scenario-list { display: flex; flex-direction: column; gap: 16px; }
+  .scenario {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 20px;
+    align-items: start;
+    padding: 24px;
+    background: var(--paper);
+    border-radius: 16px;
+    border-left: 4px solid var(--amber);
+    transition: all 0.3s ease;
+  }
+  .scenario:hover { border-left-color: var(--moss); transform: translateX(4px); }
+  .scenario-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--amber), var(--amber-deep));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .scenario-title {
+    font-weight: 700;
+    color: var(--moss);
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  .scenario-desc { font-size: 14px; color: var(--moss-mid); line-height: 1.7; }
+
+  /* ========== Persona 对比 ========== */
+  .compare-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 32px;
+  }
+  .compare-card {
+    padding: 32px;
+    border-radius: 20px;
+    position: relative;
+  }
+  .compare-card.others {
+    background: var(--paper);
+    border: 1px dashed var(--paper-edge);
+  }
+  .compare-card.us {
+    background: linear-gradient(135deg, var(--moss) 0%, var(--moss-mid) 100%);
+    color: var(--paper);
+    box-shadow: 0 20px 40px -10px rgba(31, 58, 46, 0.3);
+  }
+  .compare-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .compare-card.others .compare-label { color: var(--moss-mid); }
+  .compare-card.us .compare-label { color: var(--amber); }
+  .compare-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .compare-card.others .compare-title { color: var(--moss); }
+  .compare-list { list-style: none; }
+  .compare-list li {
+    padding: 8px 0;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    align-items: start;
+    gap: 8px;
+  }
+  .compare-card.us .compare-list li { border-bottom-color: rgba(255,255,255,0.1); }
+  .compare-list li::before {
+    content: '·';
+    font-weight: 700;
+    margin-top: -2px;
+  }
+
+  /* ========== 价值 ========== */
+  .value-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .value-card {
+    padding: 32px;
+    border-radius: 16px;
+    background: var(--paper);
+    border: 1px solid var(--paper-edge);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s;
+  }
+  .value-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(31, 58, 46, 0.12); }
+  .value-card.social { background: var(--moss); color: var(--paper); }
+  .value-card.social .value-title { color: var(--amber); }
+  .value-card.social .value-desc { color: rgba(250, 246, 238, 0.85); }
+  .value-icon { font-size: 32px; margin-bottom: 12px; }
+  .value-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--moss);
+    margin-bottom: 8px;
+  }
+  .value-desc { font-size: 14px; color: var(--moss-mid); line-height: 1.7; }
+
+  /* ========== Footer ========== */
+  footer {
+    padding: 80px 0 60px;
+    text-align: center;
+    background: linear-gradient(180deg, var(--paper) 0%, #F2E4C9 100%);
+  }
+  .footer-mark {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--moss);
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+  }
+  .footer-slogan {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 18px;
+    color: var(--amber-deep);
+    letter-spacing: 0.05em;
+    margin-bottom: 32px;
+  }
+  .footer-quote {
+    max-width: 560px;
+    margin: 0 auto;
+    font-size: 14px;
+    color: var(--moss-mid);
+    line-height: 1.8;
+    padding: 20px 0;
+    border-top: 1px solid var(--paper-edge);
+    border-bottom: 1px solid var(--paper-edge);
+  }
+  .footer-meta {
+    margin-top: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--moss-mid);
+    letter-spacing: 0.15em;
+  }
+
+  /* ========== 响应式 ========== */
+  @media (max-width: 768px) {
+    .container { padding: 0 20px; }
+    .hero-grid, .idea-layout, .compare-table, .value-grid { grid-template-columns: 1fr; }
+    .problem-grid { grid-template-columns: 1fr; }
+    .ring-demo { width: 260px; height: 260px; margin-top: 32px; }
+    .ring-inner { width: 220px; height: 220px; }
+    .ring-value { font-size: 56px; }
+    .section-title { font-size: 32px; }
+    h1.title { font-size: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero" style="border-bottom: none;">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="badge">
+          <span class="dot"></span>
+          社会服务赛道 · 创意提案
+        </div>
+        <h1 class="title">知食</h1>
+        <div class="slogan">让每一口都被懂</div>
+        <p class="tagline">
+          拍一张饭菜，AI 实时预测<strong>餐后血糖</strong>、<strong>血压影响</strong>，并给出个性化调整建议。
+        </p>
+        <p class="quote">
+          别人帮你 <s>记录饮食</s>，<br>
+          <strong>我们帮你预测饮食的健康后果</strong>。
+        </p>
+      </div>
+      <div>
+        <div class="ring-demo">
+          <div class="ring-inner">
+            <div class="ring-label">POSTPRANDIAL · 餐后血糖预测</div>
+            <div class="ring-value">11.2</div>
+            <div class="ring-unit">mmol/L</div>
+            <div class="ring-status">超标</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 一、问题陈述 ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">01 / PROBLEM</div>
+      <h2 class="section-title">我们发现的真痛点</h2>
+      <p class="section-desc">
+        饮食是慢病管理的第一道防线，但也是最难守的。患者不知道"这碗牛肉面我能不能吃"。
+      </p>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="problem-num">1.4亿</div>
+        <div class="problem-title">糖尿病患者</div>
+        <div class="problem-desc">中国糖尿病患者总数。每顿饭都在做"能不能吃、吃多少"的艰难决策。</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-num">3.3亿</div>
+        <div class="problem-title">高血压患者</div>
+        <div class="problem-desc">中国高血压患者总数。钠摄入控制是日常难题，但食物钠含量难以直观感知。</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-num">0</div>
+        <div class="problem-title">预测型产品</div>
+        <div class="problem-desc">市面所有健康 App 都在"记录饮食"，没有人在"预测饮食对个人的健康后果"。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 二、创意介绍 ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">02 / IDEA</div>
+      <h2 class="section-title">知食是什么</h2>
+      <p class="section-desc">让 AI 不只识别食物，而是懂食物对每个人的健康意义。</p>
+    </div>
+    <div class="idea-layout">
+      <div class="idea-block">
+        <h3>痛点与动机</h3>
+        <p>
+          我父亲是 2 型糖尿病+高血压，每次家庭聚餐都面临同一个困境：端上一碗牛肉面，他不知道"我吃了血糖会升到多少"。
+        </p>
+        <p>
+          现有健康 App 只会告诉他"75g 碳水"，但他要的不是数据，是<strong>这顿饭对我的身体意味着什么</strong>。
+        </p>
+        <p>
+          营养师太贵且不可能每顿饭都在身边。这是被忽视的痛点——所有人都需要答案，但没人能给出。
+        </p>
+      </div>
+      <div class="product-shape">
+        <h3>产品形态</h3>
+        <p>
+          <strong>知食</strong> 是一款 AI 饮食健康预测应用（网站 / App），用户拍一张饭菜照片，AI 实时识别食物种类与分量，基于用户慢病 Profile（糖尿病/高血压等个性化指标）<strong>预测餐后血糖、血压的影响</strong>，并给出个性化调整建议。
+        </p>
+        <div style="margin-top: 16px;">
+          <span class="product-tag">拍照识别</span>
+          <span class="product-tag">营养分析</span>
+          <span class="product-tag">个性化预测</span>
+          <span class="product-tag">对话式教练</span>
+          <span class="product-tag">决策推演</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 三、目标用户场景 ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">03 / USERS</div>
+      <h2 class="section-title">谁会用，怎么用</h2>
+      <p class="section-desc">4.7 亿慢病人群 + 为父母健康担忧的子女。每个家庭都有人需要。</p>
+    </div>
+    <div class="scenario-list">
+      <div class="scenario">
+        <div class="scenario-icon">📸</div>
+        <div>
+          <div class="scenario-title">用餐前 · 拍照预测</div>
+          <div class="scenario-desc">糖尿病患者端上一碗牛肉面，拍一张照片，AI 3 秒内预测"这顿饭对您（2型糖尿病）而言，餐后血糖会升至 11.2 mmol/L，建议减少主食 1/3"。</div>
+        </div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-icon">🎚️</div>
+        <div>
+          <div class="scenario-title">用餐中 · 决策推演</div>
+          <div class="scenario-desc">拖动滑块做"如果...则..."推演："如果减少 1/3 米饭 → 餐后血糖 8.5 mmol/L（↓2.7）"，"如果搭配一份蔬菜 → 血糖反应降低 35%"，实时看血糖曲线变化。</div>
+        </div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-icon">💬</div>
+        <div>
+          <div class="scenario-title">日常 · AI 对话教练</div>
+          <div class="scenario-desc">"我刚才吃了碗牛肉面" → AI："根据您的糖尿病情况，这碗面约含 75g 碳水，预计餐后血糖会升至 11.2 mmol/L。建议午餐不再额外摄入主食，晚餐增加绿叶蔬菜以平衡血糖。"</div>
+        </div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-icon">💝</div>
+        <div>
+          <div class="scenario-title">家庭关怀 · 为父母分析</div>
+          <div class="scenario-desc">子女为父母配置慢病 Profile（如父亲，62 岁，2 型糖尿病+高血压），选择父母常吃的菜，AI 输出："对您父亲而言，这顿饭..."——让 AI 营养师成为每个家庭都请得起的存在。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 四、差异化定位 ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">04 / DIFFERENCE</div>
+      <h2 class="section-title">为什么是知食</h2>
+      <p class="section-desc">不做第 5 个健康 App，做第一个饮食健康预测产品。</p>
+    </div>
+    <div class="compare-table">
+      <div class="compare-card others">
+        <div class="compare-label">现有产品</div>
+        <div class="compare-title">记录饮食</div>
+        <ul class="compare-list">
+          <li>记录你吃了什么</li>
+          <li>提供热量数据</li>
+          <li>被动记录工具</li>
+          <li>面向减肥人群</li>
+          <li>所有人通用建议</li>
+          <li>无法回答"血糖会升多少"</li>
+        </ul>
+      </div>
+      <div class="compare-card us">
+        <div class="compare-label">知食</div>
+        <div class="compare-title">预测健康后果</div>
+        <ul class="compare-list">
+          <li>预测这顿饭对您的健康意味着什么</li>
+          <li>给出个性化健康影响评估</li>
+          <li>主动对话式 coaching</li>
+          <li>面向 4.7 亿慢病患者</li>
+          <li>基于 Profile 动态推理</li>
+          <li>餐后血糖预测 + 决策推演</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 五、价值与意义 ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">05 / VALUE</div>
+      <h2 class="section-title">价值与意义</h2>
+      <p class="section-desc">商业价值 + 社会价值双轮驱动，AI 让此前不可能的事变为可能。</p>
+    </div>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-icon">📊</div>
+        <div class="value-title">填补市场空白</div>
+        <div class="value-desc">
+          目前市面所有产品都在做"记录"，知食是"第一个把营养数据翻译为个人健康后果"的产品。1.4 亿+3.3 亿慢病人群的市场容量巨大，且每天 3 餐高频刚需。
+        </div>
+      </div>
+      <div class="value-card social">
+        <div class="value-icon">🤝</div>
+        <div class="value-title">普惠健康公平</div>
+        <div class="value-desc">
+          让营养师级的饮食决策能力，免费/低成本地到达每个慢病家庭。缓解医疗资源压力，通过预防性饮食管理减少并发症发生。
+        </div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🏡</div>
+        <div class="value-title">家庭情感价值</div>
+        <div class="value-desc">
+          让为父母健康担忧的子女有一份具体的关怀工具——从"唠叨父母别吃"转为"陪父母分析吃什么"，把抽象的爱变成可执行的决策。
+        </div>
+      </div>
+      <div class="value-card social">
+        <div class="value-icon">🤖</div>
+        <div class="value-title">AI 不可替代</div>
+        <div class="value-desc">
+          实时食物识别 + 个性化健康影响预测 + 对话式 coaching + 决策推演，是没有 AI 根本无法实现的能力。只有 AI 能基于个性化 Profile 动态推理。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <div class="footer-mark">知食</div>
+    <div class="footer-slogan">让每一口都被懂</div>
+    <div class="footer-quote">
+      4.7 亿慢病人群，每个家庭都有人需要。<br>
+      这是 AI 能做、且必须做的事。
+    </div>
+    <div class="footer-meta">
+      TRAE AI 创造力大赛 · 社会服务赛道 · 创意提案
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
