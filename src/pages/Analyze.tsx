@@ -6,7 +6,7 @@ import PersonaBadge from '../components/PersonaBadge'
 import { Link } from 'react-router-dom'
 
 export default function Analyze() {
-  const { currentPersonaId, currentFoodId, setCurrentFood, addHistory } = useStore()
+  const { currentPersonaId, currentFoodId, setCurrentFood } = useStore()
   const persona = getPersonaById(currentPersonaId)!
   const food = getFoodById(currentFoodId || 'beef_noodle')!
   const result = analyzeFood(food, persona)

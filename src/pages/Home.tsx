@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { FOODS, getFoodById } from '../data/foods'
 import { getPersonaById } from '../data/foods'
-import { useStore, getRiskLevel, getRiskColor, getRiskLabel } from '../store/useStore'
+import { useStore, getRiskColor } from '../store/useStore'
 import { analyzeFood } from '../lib/healthEngine'
 import PredictionRing from '../components/PredictionRing'
 import PersonaBadge from '../components/PersonaBadge'
@@ -11,10 +11,6 @@ export default function Home() {
   const navigate = useNavigate()
   const { currentPersonaId, setCurrentFood } = useStore()
   const persona = getPersonaById(currentPersonaId)!
-
-  // 实时演示菜品（默认展示牛肉面）
-  const demoFood = getFoodById('beef_noodle')!
-  const demoResult = analyzeFood(demoFood, persona)
 
   // 轮播演示菜品（每5秒切换）
   const [carouselIdx, setCarouselIdx] = useState(0)

@@ -1,6 +1,5 @@
 import { useStore } from '../store/useStore'
-import { getPersonaById, FOODS } from '../data/foods'
-import { analyzeFood } from '../lib/healthEngine'
+import { getPersonaById } from '../data/foods'
 import PersonaBadge from '../components/PersonaBadge'
 import { Link } from 'react-router-dom'
 
