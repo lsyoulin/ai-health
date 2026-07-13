@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== 知食 · 全局设计系统 ===== */
+
+:root {
+  --color-paper: #FAF6EE;
+  --color-ink: #1A1F1C;
+  --color-amber: #D4A574;
+  --color-moss: #1F3A2E;
+  --color-danger: #C8553D;
+  --color-warning: #E6B655;
+  --color-safe: #5C8A5C;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'palt';
+  scroll-behavior: smooth;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== 自定义滚动条 ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E8DCC4;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #A07045;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7F5836;
+}
+
+/* ===== 字体辅助类 ===== */
+.font-display {
+  font-family: 'Noto Serif SC', serif;
+  letter-spacing: -0.02em;
+}
+
+.font-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== 渐变文字 ===== */
+.text-gradient-amber {
+  background: linear-gradient(135deg, #D4A574 0%, #A07045 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-moss {
+  background: linear-gradient(135deg, #3F6E54 0%, #1F3A2E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== 噪点纹理背景 ===== */
+.bg-grain {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(31, 58, 46, 0.05) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* ===== 卡片悬浮效果 ===== */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -10px rgba(31, 58, 46, 0.15);
+}
+
+/* ===== 预测环动画 ===== */
+.ring-progress {
+  stroke-dasharray: 628;
+  stroke-dashoffset: 628;
+  animation: ring-fill 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes ring-fill {
+  to {
+    stroke-dashoffset: var(--target-offset, 314);
+  }
+}
+
+/* ===== 数字滚动效果 ===== */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-count-up {
+  animation: count-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ===== 页面切换动画 ===== */
+.page-enter {
+  animation: page-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== 按钮按压效果 ===== */
+.btn-press {
+  transition: transform 0.1s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* ===== 信号灯脉冲 ===== */
+@keyframes pulse-signal {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 85, 61, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(200, 85, 61, 0); }
+}
+
+.pulse-danger {
+  animation: pulse-signal 2s ease-in-out infinite;
+}
+
+@keyframes pulse-safe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(92, 138, 92, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(92, 138, 92, 0); }
+}
+
+.pulse-safe {
+  animation: pulse-safe 2s ease-in-out infinite;
+}
+
+/* ===== 文字描边效果（用于强调） ===== */
+.text-outline {
+  text-shadow:
+    -1px -1px 0 var(--color-moss),
+    1px -1px 0 var(--color-moss),
+    -1px 1px 0 var(--color-moss),
+    1px 1px 0 var(--color-moss);
+}
