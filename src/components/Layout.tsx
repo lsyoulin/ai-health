@@ -78,7 +78,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <Logo size={20} />
             <span className="text-xs text-moss-700">
-              知食 · 让每一口都被懂
+              知食 · 「吃」掉慢病，让每一口都被懂
             </span>
           </div>
           <div className="text-xs text-moss-500">

@@ -44,7 +44,7 @@ export default function Home() {
             <h1 className="font-display text-6xl md:text-8xl font-black leading-[0.95] text-moss-700">
               知食
               <span className="block text-2xl md:text-3xl font-normal text-amber-700 mt-3 tracking-wide">
-                让每一口都被懂
+                「吃」掉慢病，让每一口都被懂
               </span>
             </h1>
 

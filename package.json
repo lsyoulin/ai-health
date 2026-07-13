@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "知食 · 慢病饮食AI伙伴 — TRAE AI 创造力大赛参赛作品",
+  "description": "知食 · 「吃」掉慢病，让每一口都被懂 — 慢病饮食AI伙伴 — TRAE AI 创造力大赛参赛作品",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
