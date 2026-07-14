@@ -1,0 +1,38 @@
+# 知食 Demo 体验包
+
+> **知食 · 「吃」掉慢病，让每一口都被懂**
+> 慢病饮食 AI 伙伴 — TRAE AI 创造力大赛参赛作品
+
+## 如何体验
+
+1. 解压本压缩包到任意目录
+2. 双击 `index.html` 用浏览器打开
+3. 开始体验
+
+## 推荐浏览器
+
+- Chrome / Edge / Firefox 最新版
+- 需要联网加载字体（Google Fonts），如断网将自动回退到系统字体
+
+## 3 秒惊艳体验路径（评委 1 分钟指南）
+
+1. **首页** → 即看到品牌主张 + 演示菜品卡（带预测环动效）
+2. **点"演示场景"** → 选择菜品 → 预测环炸出 → AI 建议
+3. **切慢病 Persona** → 同一道菜看 4 种 AI 建议（糖尿病/高血压/糖尿病+高血压/健康人）
+4. **点"为父母分析"** → 输入父母情况 → 看 AI 关怀建议
+
+## 在线体验地址
+
+https://ai-health-chi-nine.vercel.app/
+
+## GitHub 仓库
+
+https://github.com/lsyoulin/ai-health
+
+## 技术栈
+
+React 18 + TypeScript + Vite 5 + Tailwind CSS 3 + Zustand + React Router 6
+
+## 免责声明
+
+本 Demo 为参赛作品，健康预测结果基于营养学知识简化建模，仅供参考，不构成医疗建议。
