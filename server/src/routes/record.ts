@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
 import { authRequired } from '../middleware/auth.js'
+import { attachDisclaimer } from '../middleware/disclaimer.js'
 
 const router = Router()
 router.use(authRequired)
@@ -51,7 +52,8 @@ router.post('/', async (req, res, next) => {
       },
       include: { items: { include: { food: true } } },
     })
-    res.status(201).json({ record })
+    const withDisclaimer = await attachDisclaimer(req, res, { record })
+    res.status(201).json(withDisclaimer)
   } catch (err) {
     next(err)
   }

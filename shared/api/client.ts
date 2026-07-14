@@ -11,6 +11,10 @@ import type {
   OptimizationResult,
   SimulationInput,
   SimulationResult,
+  LegalDoc,
+  LegalDocType,
+  LegalAgreementsResponse,
+  LegalStatusResponse,
 } from '../types'
 
 // 根据环境自动选择 API 基础地址
@@ -180,4 +184,34 @@ export const optimizeApi = {
     items: Array<{ foodId: string; amountG: number }>
     simulation: SimulationInput
   }) => request<SimulationResult>('/optimize/simulate', { method: 'POST', body: data }),
+}
+
+// ============ 合规文档 API ============
+export const legalApi = {
+  // 列出所有当前生效的合规文档
+  listDocs: () =>
+    request<{ docs: LegalDoc[] }>('/legal/docs'),
+
+  // 获取指定类型的当前生效版本
+  getDoc: (docType: LegalDocType) =>
+    request<{ doc: LegalDoc }>(`/legal/docs/${docType}`),
+
+  // 用户同意（批量记录）
+  agree: (data: {
+    docIds: string[]
+    source?: 'register' | 'settings' | 'upgrade'
+  }) => request<{
+    agreed: boolean
+    count: number
+    docs: Array<{ id: string; docType: string; version: string }>
+    agreedAt: string
+  }>('/legal/agree', { method: 'POST', body: data }),
+
+  // 查询当前用户的同意历史（合规审计用）
+  getAgreements: () =>
+    request<LegalAgreementsResponse>('/legal/agreements'),
+
+  // 检查用户是否已同意所有必需文档
+  getStatus: () =>
+    request<LegalStatusResponse>('/legal/status'),
 }

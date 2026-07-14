@@ -178,3 +178,52 @@ export interface SimulationResult {
   improvement: number
   persona: { id: string; name: string; condition: string }
 }
+
+// ============ 合规文档 ============
+export type LegalDocType = 'user_agreement' | 'privacy_policy' | 'health_consent' | 'disclaimer'
+
+export interface LegalDoc {
+  id: string
+  docType: LegalDocType
+  version: string
+  title: string
+  content: string
+  effectiveDate: string
+}
+
+export interface Disclaimer {
+  text: string
+  version: string
+  docType: string
+}
+
+export interface UserAgreementRecord {
+  id: string
+  docType: LegalDocType
+  version: string
+  agreeSource: 'register' | 'settings' | 'upgrade'
+  ipAddress?: string | null
+  createdAt: string
+  doc: {
+    id: string
+    title: string
+    effectiveDate: string
+  }
+}
+
+export interface LegalAgreementsResponse {
+  agreements: UserAgreementRecord[]
+  latest: UserAgreementRecord[]
+  requiredDocs: LegalDocType[]
+  agreedDocTypes: string[]
+  allRequiredAgreed: boolean
+}
+
+export interface LegalStatusResponse {
+  allAgreed: boolean
+  details: Array<{
+    docType: LegalDocType
+    agreed: boolean
+    version: string | null
+  }>
+}

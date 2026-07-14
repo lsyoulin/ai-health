@@ -7,6 +7,7 @@ import Simulate from './pages/Simulate'
 import Parent from './pages/Parent'
 import Coach from './pages/Coach'
 import Trends from './pages/Trends'
+import Legal from './pages/Legal'
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
         <Route path="/parent" element={<Parent />} />
         <Route path="/coach" element={<Coach />} />
         <Route path="/trends" element={<Trends />} />
+        <Route path="/legal/:docType" element={<Legal />} />
+        <Route path="/legal" element={<Legal />} />
       </Routes>
     </Layout>
   )

@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
 import { authRequired, authOptional } from '../middleware/auth.js'
+import { attachDisclaimer } from '../middleware/disclaimer.js'
 import {
   optimizeMeal,
   simulateAdjustment,
@@ -88,7 +89,9 @@ router.post('/', authOptional, async (req, res, next) => {
 
     // 执行优化
     const result = optimizeMeal(mealItems, persona)
-    res.json({ result, persona: { id: persona.id, name: persona.name, condition: persona.condition } })
+    const payload = { result, persona: { id: persona.id, name: persona.name, condition: persona.condition } }
+    const withDisclaimer = await attachDisclaimer(req, res, payload)
+    res.json(withDisclaimer)
   } catch (err) {
     next(err)
   }
@@ -143,7 +146,7 @@ router.post('/simulate', authOptional, async (req, res, next) => {
     const baseline = optimizeMeal(mealItems, persona)
     const adjusted = simulateAdjustment(mealItems, persona, simInput)
 
-    res.json({
+    const payload = {
       baseline: {
         predictedGlucose: baseline.prediction.predictedGlucose,
         glucoseDelta: baseline.prediction.glucoseDelta,
@@ -159,7 +162,9 @@ router.post('/simulate', authOptional, async (req, res, next) => {
         (baseline.prediction.predictedGlucose - adjusted.predictedGlucose) * 10
       ) / 10,
       persona: { id: persona.id, name: persona.name, condition: persona.condition },
-    })
+    }
+    const withDisclaimer = await attachDisclaimer(req, res, payload)
+    res.json(withDisclaimer)
   } catch (err) {
     next(err)
   }

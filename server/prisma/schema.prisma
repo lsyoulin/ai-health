@@ -23,6 +23,7 @@ model User {
 
   personas    Persona[]
   foodRecords FoodRecord[]
+  agreements  UserAgreement[]
 
   @@index([email])
 }
@@ -130,4 +131,41 @@ model KnowledgeCard {
 
   @@index([category])
   @@index([type])
+}
+
+// ============ 合规文档 ============
+model LegalDoc {
+  id            String   @id @default(cuid())
+  docType       String   // user_agreement | privacy_policy | health_consent | disclaimer
+  version       String   // 语义化版本号，如 "1.0.0"
+  title         String
+  content       String   // markdown 正文
+  effectiveDate DateTime // 生效日期
+  isActive      Boolean  @default(true) // 是否当前生效版本
+  createdAt     DateTime @default(now())
+
+  agreements UserAgreement[]
+
+  @@unique([docType, version])
+  @@index([docType, isActive])
+}
+
+// ============ 用户同意记录（合规审计） ============
+model UserAgreement {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  docId     String
+  doc       LegalDoc @relation(fields: [docId], references: [id])
+  // 记录用户同意时的文档版本快照（审计用）
+  docType   String
+  version   String
+  // 同意来源：register（注册时）| settings（设置中重新同意）| upgrade（版本升级触发）
+  agreeSource String  @default("register")
+  ipAddress String?
+  userAgent  String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([docType, version])
 }

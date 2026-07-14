@@ -7,12 +7,14 @@
  * - 食物库：161 种中国常见食物（9 大分类）
  * - 4 种默认 Persona 模板（绑定到 demo user）
  * - 50 张慢病知识卡（diabetes 20 + hypertension 18 + general 12）
+ * - 4 份合规文档（用户协议/隐私政策/健康信息知情同意书/免责声明）
  *
  * 数据来源：
  * - 《中国食物成分表》标准版第 6 版
  * - 《中国 2 型糖尿病防治指南》2020 版
  * - 《中国高血压防治指南》2024 版
  * - 《中国居民膳食指南》2022 版
+ * - 《个人信息保护法》(PIPL) / 《数据安全法》 / 《网络安全法》
  */
 
 import 'dotenv/config'
@@ -35,6 +37,7 @@ import {
 } from './data/foods-protein-other.js'
 import { defaultPersonas } from './data/personas.js'
 import { knowledgeCards } from './data/knowledge-cards.js'
+import { legalDocs } from './data/legal-docs.js'
 
 const prisma = new PrismaClient()
 
@@ -43,6 +46,8 @@ async function main() {
 
   // ========== 1. 清空旧数据（保证幂等） ==========
   console.log('🧹 清空旧数据...')
+  await prisma.userAgreement.deleteMany()
+  await prisma.legalDoc.deleteMany()
   await prisma.foodRecordItem.deleteMany()
   await prisma.foodRecord.deleteMany()
   await prisma.knowledgeCard.deleteMany()
@@ -160,7 +165,27 @@ async function main() {
   }
   console.log()
 
-  // ========== 5. 完成统计 ==========
+  // ========== 5. 插入合规文档 ==========
+  console.log('⚖️  插入合规文档...')
+
+  await prisma.legalDoc.createMany({
+    data: legalDocs.map((d) => ({
+      docType: d.docType,
+      version: d.version,
+      title: d.title,
+      content: d.content,
+      effectiveDate: new Date(d.effectiveDate),
+      isActive: d.isActive,
+    })),
+  })
+
+  console.log(`   ✓ 共插入 ${legalDocs.length} 份合规文档`)
+  for (const d of legalDocs) {
+    console.log(`     - ${d.title} (v${d.version})`)
+  }
+  console.log()
+
+  // ========== 6. 完成统计 ==========
   console.log('═══════════════════════════════════════')
   console.log('✅ Seed 完成！')
   console.log('═══════════════════════════════════════')
@@ -168,6 +193,7 @@ async function main() {
   console.log(`  demo user: ${demoEmail}`)
   console.log(`  Persona: ${defaultPersonas.length} 种`)
   console.log(`  知识卡: ${knowledgeCards.length} 张`)
+  console.log(`  合规文档: ${legalDocs.length} 份`)
   console.log('═══════════════════════════════════════\n')
 }
 

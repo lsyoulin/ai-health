@@ -691,3 +691,65 @@ TRAE AI 创造力大赛
   1. W5-6 UI 交互部分：前端 Simulate 页面对接后端 API（三轴推演滑块）
   2. 前端使用本地 healthEngine.ts 的简化算法，需迁移到调用后端 API
   3. 移动端 Taro 项目对接优化器 API
+
+### 变更 012 — W7-8 合规框架实现
+- **变更时间**：2026-07-15
+- **变更类型**：合规基础设施
+- **决策背景**：W7-8 里程碑要求完成用户协议、隐私政策、免责声明等合规框架。基于产品方案中的合规要求（PIPL/数据安全法/医疗器械监督管理条例），需要：
+  1. 注册时必须同意《用户协议》与《健康信息知情同意书》（PIPL 第 29 条要求敏感信息单独同意）
+  2. 每次分析结果附带免责声明
+  3. 数据库化管理合规文档（支持版本控制 + 用户同意审计）
+- **数据模型设计**：
+  - `LegalDoc`：合规文档版本管理（docType + version 唯一，isActive 标记当前生效版本）
+  - `UserAgreement`：用户同意记录（含 IP + UserAgent 审计字段，agreeSource 区分注册/设置/升级触发）
+- **合规文档清单**（v1.0.0，2026-07-15 生效）：
+  1. 《知食用户协议》（8 节）— 服务说明/注册账号/行为规范/知识产权/免责/变更终止/法律适用/联系
+  2. 《知食隐私政策》（10 节）— PIPL/数据安全法/网络安全法、信息类型、存储保护（HTTPS+AES-256+境内不出境）、用户权利（第 44-50 条）、未成年人保护
+  3. 《健康信息知情同意书》（7 节）— 同意声明/信息清单/使用场景/PIPL第29条单独同意/风险告知/撤回退回/自愿性
+  4. 《知食分析结果免责声明》（5 节）— 服务性质/预测说明/不替代医生/紧急情况（120）/用户责任
+- **API 设计**：
+  - `GET /api/legal/docs` — 列出所有当前生效的合规文档（公开）
+  - `GET /api/legal/docs/:docType` — 获取指定类型当前生效版本（公开，用于免责声明等频繁展示场景）
+  - `POST /api/legal/agree` — 用户同意（批量记录，需登录）
+  - `GET /api/legal/agreements` — 查询当前用户的同意历史（合规审计用，需登录）
+  - `GET /api/legal/status` — 检查用户是否已同意所有必需文档（注册流程前置校验）
+- **免责声明中间件**：
+  - `attachDisclaimer()` — 附加 disclaimer 字段到响应体 + 设置 X-Disclaimer-Version 响应头
+  - 5 分钟缓存避免每次查询数据库
+  - 集成到 `POST /api/optimize`、`POST /api/optimize/simulate`、`POST /api/records`（创建饮食记录）
+  - 数据库不可用时降级为静态默认文本
+- **新增文件**：
+  - `server/prisma/data/legal-docs.ts` — 4 份合规文档 seed 数据
+  - `server/src/routes/legal.ts` — 合规文档 API 路由（5 个端点）
+  - `server/src/middleware/disclaimer.ts` — 免责声明中间件（带缓存）
+  - `src/components/DisclaimerBanner.tsx` — 免责声明横幅组件（支持 compact 模式）
+  - `src/components/RegisterConsent.tsx` — 注册勾选组件（3 份必需文档独立勾选）
+  - `src/pages/Legal.tsx` — 合规文档展示页（支持 ?type= 切换，后端不可用时降级为摘要）
+- **修改文件**：
+  - `server/prisma/schema.prisma` — 新增 LegalDoc + UserAgreement 模型，User 上加 agreements 反向关系
+  - `server/prisma/seed.ts` — 增加合规文档 seed 逻辑（清空 + 插入 4 份）
+  - `server/src/index.ts` — 注册 legal 路由
+  - `server/src/routes/optimize.ts` — 集成 attachDisclaimer 到 / 和 /simulate 端点
+  - `server/src/routes/record.ts` — 集成 attachDisclaimer 到 POST / 端点
+  - `shared/types/index.ts` — 新增 LegalDoc/LegalDocType/Disclaimer/UserAgreementRecord/LegalAgreementsResponse/LegalStatusResponse 6 个类型
+  - `shared/api/client.ts` — 新增 legalApi（listDocs/getDoc/agree/getAgreements/getStatus）
+  - `src/App.tsx` — 新增 /legal/:docType 路由
+  - `src/components/Layout.tsx` — 页脚添加 4 份合规文档链接
+- **数据库 Migration**：
+  - `20260714180739_add_legal_docs` — 创建 LegalDoc + UserAgreement 表 + 索引 + 外键
+- **验证结果**：
+  - 后端 TypeScript 编译通过
+  - 前端 TypeScript 编译通过
+  - Seed 执行成功：插入 4 份合规文档
+  - API 烟测全部通过：
+    - `GET /legal/docs` — 列出 4 份文档
+    - `GET /legal/docs/disclaimer` — 返回完整 markdown 内容
+    - `POST /legal/agree` — 用户同意记录创建成功（含 IP `::ffff:172.19.0.1` 审计字段）
+    - `GET /legal/agreements` — 返回 latest + allRequiredAgreed 状态
+    - `GET /legal/status` — 返回 3 份必需文档的同意状态
+    - `POST /api/optimize` 响应附带 disclaimer 字段 + X-Disclaimer-Version: 1.0.0 响应头
+- **待完成**：
+  1. W9-10 集成测试：前端 Simulate 页面对接后端 /api/optimize（替换本地 healthEngine）
+  2. 前端注册流程嵌入 RegisterConsent 组件（目前 demo 模式直接进入，需新增登录注册页）
+  3. 前端 DisclaimerBanner 集成到 Analyze/Simulate/Trends 页面底部
+  4. 移动端 Taro 项目对接 legal API

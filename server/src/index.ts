@@ -8,6 +8,7 @@ import recordRoutes from './routes/record.js'
 import personaRoutes from './routes/persona.js'
 import knowledgeRoutes from './routes/knowledge.js'
 import optimizeRoutes from './routes/optimize.js'
+import legalRoutes from './routes/legal.js'
 import { errorHandler } from './middleware/error.js'
 import { notFound } from './middleware/notFound.js'
 
@@ -36,6 +37,7 @@ app.use('/api/records', recordRoutes)
 app.use('/api/personas', personaRoutes)
 app.use('/api/knowledge', knowledgeRoutes)
 app.use('/api/optimize', optimizeRoutes)
+app.use('/api/legal', legalRoutes)
 
 // 404 + 错误处理
 app.use(notFound)

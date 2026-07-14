@@ -81,6 +81,15 @@ export default function Layout({ children }: { children: ReactNode }) {
               知食 · 「吃」掉慢病，让每一口都被懂
             </span>
           </div>
+          <div className="flex items-center gap-3 text-xs text-moss-500">
+            <Link to="/legal/user_agreement" className="hover:text-amber-700 transition-colors">用户协议</Link>
+            <span className="opacity-40">·</span>
+            <Link to="/legal/privacy_policy" className="hover:text-amber-700 transition-colors">隐私政策</Link>
+            <span className="opacity-40">·</span>
+            <Link to="/legal/health_consent" className="hover:text-amber-700 transition-colors">健康同意书</Link>
+            <span className="opacity-40">·</span>
+            <Link to="/legal/disclaimer" className="hover:text-amber-700 transition-colors">免责声明</Link>
+          </div>
           <div className="text-xs text-moss-500">
             TRAE AI 创造力大赛 · 社会服务赛道 · Demo 演示
           </div>
