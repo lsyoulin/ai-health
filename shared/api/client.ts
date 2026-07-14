@@ -8,6 +8,9 @@ import type {
   Food,
   FoodRecord,
   KnowledgeCard,
+  OptimizationResult,
+  SimulationInput,
+  SimulationResult,
 } from '../types'
 
 // 根据环境自动选择 API 基础地址
@@ -158,4 +161,23 @@ export const knowledgeApi = {
     const q = query.toString()
     return request<KnowledgeCard[]>(`/knowledge${q ? `?${q}` : ''}`)
   },
+}
+
+// ============ 组合优化器 API ============
+export const optimizeApi = {
+  // 分析并优化一餐
+  optimize: (data: {
+    personaId?: string
+    items: Array<{ foodId: string; amountG: number }>
+  }) => request<{ result: OptimizationResult; persona: { id: string; name: string; condition: string } }>(
+    '/optimize',
+    { method: 'POST', body: data }
+  ),
+
+  // 决策推演
+  simulate: (data: {
+    personaId?: string
+    items: Array<{ foodId: string; amountG: number }>
+    simulation: SimulationInput
+  }) => request<SimulationResult>('/optimize/simulate', { method: 'POST', body: data }),
 }

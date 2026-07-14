@@ -106,3 +106,75 @@ export interface HealthPrediction {
   energyTotal: number
   sodiumTotal?: number
 }
+
+// ============ 组合优化器 ============
+export interface MealNutrition {
+  calories: number
+  carbs: number
+  protein: number
+  fat: number
+  fiber: number
+  sodium: number
+  potassium: number
+  weightedGI: number
+  gl: number
+}
+
+export interface MealPrediction {
+  totalNutrition: MealNutrition
+  predictedGlucose: number
+  glucoseDelta: number
+  predictedBpChange: number
+  riskLevel: 'safe' | 'warning' | 'danger'
+}
+
+export type AdjustmentType =
+  | 'reduce_carb'
+  | 'replace_high_gi'
+  | 'reduce_sodium'
+  | 'add_vegetable'
+  | 'add_exercise'
+  | 'reduce_portion'
+  | 'change_order'
+
+export interface OptimizationAdjustment {
+  type: AdjustmentType
+  description: string
+  targetFoodName?: string
+  impact: { glucoseDelta: number; bpDelta: number }
+  priority: 'high' | 'medium' | 'low'
+}
+
+export interface OptimizationResult {
+  prediction: MealPrediction
+  optimization: {
+    score: number
+    adjustments: OptimizationAdjustment[]
+    optimizedPrediction: MealPrediction
+  }
+  suggestions: string[]
+}
+
+export interface SimulationInput {
+  carbReduction?: number
+  addVegetable?: boolean
+  exercise?: number
+  replaceStaple?: boolean
+  changeOrder?: boolean
+}
+
+export interface SimulationResult {
+  baseline: {
+    predictedGlucose: number
+    glucoseDelta: number
+    riskLevel: string
+  }
+  adjusted: {
+    predictedGlucose: number
+    glucoseDelta: number
+    exerciseDelta: number
+    totalNutrition: MealNutrition
+  }
+  improvement: number
+  persona: { id: string; name: string; condition: string }
+}
