@@ -604,3 +604,45 @@ TRAE AI 创造力大赛
   2. 将 Taro 项目纳入 Docker 编排
   3. 对接后端 API（认证/Persona/食物/记录/知识卡）
   4. 实现拍照识别 + LLM 对话功能
+
+### 变更 010 — W3-4 食物数据库 + 慢病知识库构建
+- **变更时间**：2026-07-15
+- **变更类型**：数据资产构建
+- **决策背景**：W3-4 里程碑要求构建 500 种中国常见食物 + 50 张知识卡 + 4 种 Persona，为后端 API 和前端演示提供真实数据支撑
+- **实现内容**：
+  1. **食物库 seed（161 种）**：覆盖 9 大分类
+     - 主食 26 种（米饭/面食/面包/杂粮）
+     - 蔬菜 39 种（叶菜/瓜茄/根茎/豆类蔬菜/菌菇藻/花茎）
+     - 水果 20 种（仁果/热带/柑橘/浆果/瓜果/核果）
+     - 肉类 26 种（猪/牛/羊/鸡/鸭/鱼虾蟹）
+     - 蛋类 5 种、奶类 8 种、豆类 10 种、坚果 10 种、调味 8 种、混合菜品 9 种
+  2. **Persona 模板（4+3 种）**：
+     - 4 种默认 Persona（糖尿病/高血压/糖尿病+高血压/健康人）绑定到 demo user
+     - 3 种为父母分析模式模板（父亲糖尿病+高血压/母亲糖尿病/父亲高血压）
+  3. **知识卡（50 张）**：
+     - diabetes 20 张（机制 6 + 食物 8 + 并发症 3 + 日常 3）
+     - hypertension 18 张（机制 5 + 食物 8 + 并发症 3 + 日常 2）
+     - general 12 张（机制 3 + 食物 4 + 并发症 1 + 急救 2 + 日常 2）
+  4. **demo user**：demo@zhishi.com / demo123456
+- **数据来源**：
+  - 《中国食物成分表》标准版第 6 版（营养数据）
+  - 《中国 2 型糖尿病防治指南》2020 版（糖尿病知识卡）
+  - 《中国高血压防治指南》2024 版（高血压知识卡）
+  - 《中国居民膳食指南》2022 版（通用知识卡）
+- **新增文件**：
+  - `server/prisma/data/types.ts` — Seed 数据共享类型定义
+  - `server/prisma/data/foods-staple-vegetable-fruit.ts` — 85 种食物数据
+  - `server/prisma/data/foods-protein-other.ts` — 76 种食物数据
+  - `server/prisma/data/personas.ts` — 7 种 Persona 模板
+  - `server/prisma/data/knowledge-cards.ts` — 50 张知识卡
+  - `server/prisma/seed.ts` — Seed 主脚本
+- **修改文件**：
+  - `server/package.json` — 添加 `prisma.seed` 配置
+- **验证结果**：
+  - TypeScript 编译通过
+  - Docker 容器内执行 `npx prisma db seed` 成功
+  - API 验证通过：GET /api/foods、GET /api/knowledge、POST /api/auth/login 均正常返回 seed 数据
+- **待优化**：
+  1. 本地 Windows 运行 seed 遇到 Prisma 连接权限问题（容器内正常），需排查 Prisma 在 Windows 上的连接方式
+  2. 食物库当前 161 种，后续可扩展到 500 种（增加更多地方菜品、加工食品、调味品等）
+  3. 知识卡内容可增加图片/图表增强可读性
