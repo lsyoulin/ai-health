@@ -1,0 +1,114 @@
+.page-records {
+  min-height: 100vh;
+  padding: 32px;
+  padding-bottom: 120px;
+
+  .page-header {
+    margin-bottom: 32px;
+
+    .page-title {
+      font-size: 48px;
+      font-weight: bold;
+      color: #1F3A2E;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .page-desc {
+      font-size: 26px;
+      color: #999;
+    }
+  }
+
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 120px;
+
+    .empty-icon {
+      font-size: 80px;
+      margin-bottom: 16px;
+    }
+
+    .empty-text {
+      font-size: 28px;
+      color: #999;
+      margin-bottom: 24px;
+    }
+
+    .btn-add {
+      background: #D4A574;
+      color: #fff;
+      border-radius: 24px;
+      padding: 16px 48px;
+      font-size: 28px;
+      border: none;
+
+      &::after { border: none; }
+    }
+  }
+
+  .meal-group {
+    margin-bottom: 32px;
+
+    .meal-title {
+      font-size: 30px;
+      font-weight: 600;
+      color: #1F3A2E;
+      margin-bottom: 16px;
+      display: block;
+      padding-left: 8px;
+      border-left: 6px solid #D4A574;
+    }
+  }
+
+  .record-card {
+    margin-bottom: 16px;
+
+    .record-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .record-time {
+      font-size: 26px;
+      color: #999;
+    }
+
+    .record-glucose {
+      font-size: 26px;
+      color: #D4A574;
+      font-weight: 500;
+    }
+
+    .record-items {
+      .record-item {
+        font-size: 28px;
+        color: #2C2C2C;
+        display: block;
+        padding: 4px 0;
+      }
+    }
+
+    .actual-glucose {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+
+      .actual-label {
+        font-size: 24px;
+        color: #999;
+      }
+
+      .actual-value {
+        font-size: 24px;
+        color: #4CAF50;
+        font-weight: 500;
+      }
+    }
+  }
+}

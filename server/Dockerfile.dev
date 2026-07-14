@@ -1,0 +1,16 @@
+# 知食后端 - 开发环境
+# 基于 Node + tsx 热重载
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 安装 openssl（Prisma query engine 依赖）
+RUN apk add --no-cache openssl
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# 源代码通过 volume 挂载
+EXPOSE 3001
+
+CMD ["npm", "run", "dev"]

@@ -541,3 +541,66 @@ TRAE AI 创造力大赛
   - 核心隐喻：每次饮食调整 = 战胜慢病的一步
   - 未来可引入「慢病吃掉指数」作为核心数据指标（游戏化进度）
 - **下一步**：基于"吃掉慢病"叙事，落地「饮食组合优化器」与「慢病认知引擎」两大新核心功能
+
+### 变更 008 — 采用 Docker 部署方案
+- **变更时间**：2026-07-14
+- **变更类型**：部署架构
+- **变更前**：后端本地运行（npm run dev），数据库本地安装
+- **变更后**：全栈 Docker 容器化部署（Docker Compose 编排）
+- **部署架构**：
+  - `docker-compose.yml`（开发环境）：db + backend + frontend 三服务
+  - `docker-compose.prod.yml`（生产环境）：自定义 network，DB 不暴露端口，SSL 证书挂载
+  - `nginx.conf`：前端 SPA 回退 + 反向代理 /api/ → backend:3001 + gzip + 静态资源缓存
+- **容器配置**：
+  - `zhishi-db`：postgres:16-alpine，端口 5432，volume db-data，healthcheck pg_isready，init.sql 启用 pg_trgm 扩展
+  - `zhishi-backend`：node:20-alpine + openssl，端口 3001，volume 挂载源码热重载，启动时 `prisma generate && prisma migrate deploy && npm run dev`
+  - `zhishi-frontend`：node:20-alpine + Vite，端口 5173，`--host 0.0.0.0`
+- **部署中解决的问题**：
+  1. Docker Hub 被墙 → 从 DaoCloud 镜像源拉取 `node:20-alpine` 并 tag
+  2. Prisma 缺少 OpenSSL → Dockerfile 添加 `apk add --no-cache openssl`
+  3. Prisma Client 未初始化 → 启动命令添加 `npx prisma generate`
+- **验证结果**：
+  - `GET /api/health` → `{"status":"ok","service":"zhishi-server"}`
+  - `POST /api/auth/register` → 成功返回 JWT token
+  - 数据库 6 张表创建成功
+- **影响范围**：
+  - `docker-compose.yml`、`docker-compose.prod.yml`、`nginx.conf`
+  - `server/Dockerfile`、`server/Dockerfile.dev`（添加 openssl）
+  - `Dockerfile`（前端生产构建）、`Dockerfile.dev`（前端开发）
+  - `server/.env.example`、`server/prisma/init.sql`
+  - Prisma 迁移文件 `server/prisma/migrations/20260714004946_init/`
+
+### 变更 009 — 新增 Taro 多端移动端
+- **变更时间**：2026-07-14
+- **变更类型**：新增移动端项目
+- **决策背景**：目标用户是中老年慢病患者（1.4亿糖尿病+3.3亿高血压），大量使用微信但下载 App 意愿低
+- **方案选择**：Taro 多端（一套代码输出微信小程序 + H5 + App）
+- **技术栈**：Taro 4.2.0 + React 18 + TypeScript + SCSS
+- **项目结构**：
+  - `mobile/`：Taro 项目目录
+  - `shared/`：Web 前端与移动端共享代码（类型定义 + API 客户端）
+  - `mobile/src/pages/`：6 个核心页面
+- **页面清单**：
+  1. `pages/index/` — 首页（品牌头部 + Persona 切换 + 今日概览 + 快速入口 + 知识卡）
+  2. `pages/analyze/` — 拍照分析（拍照/选图 + 食物列表 + 血糖预测环 + 营养汇总 + AI建议）
+  3. `pages/records/` — 饮食记录（按餐次分组 + 预测血糖/实际血糖展示）
+  4. `pages/coach/` — AI 对话（对话气泡 + 输入栏 + 模拟 AI 回复）
+  5. `pages/profile/` — 我的（登录/注册 + 用户信息 + Persona 列表 + 合规入口）
+  6. `pages/persona/` — 慢病身份管理（新增/编辑/删除 Persona + 关系/病种选择器）
+- **共享层设计**：
+  - `shared/types/index.ts`：User/Persona/Food/FoodRecord/KnowledgeCard 类型定义
+  - `shared/api/client.ts`：统一 API 客户端（H5 用 fetch，小程序用 Taro.request）
+  - webpack alias `@shared` 解析跨项目引用
+- **构建验证**：
+  - H5 构建成功（webpack 5.91.0，8 个 assets，2 个资源大小警告）
+  - 微信小程序构建待验证（需配置 AppID 和图标）
+- **影响范围**：
+  - 新增 `mobile/` 目录（Taro 项目）
+  - 新增 `shared/` 目录（共享代码）
+  - `mobile/config/index.ts`（webpack alias + babel-loader 处理 shared 目录）
+  - TabBar 4 项：首页/分析/记录/我的
+- **后续计划**：
+  1. 配置微信小程序 AppID 和 TabBar 图标
+  2. 将 Taro 项目纳入 Docker 编排
+  3. 对接后端 API（认证/Persona/食物/记录/知识卡）
+  4. 实现拍照识别 + LLM 对话功能

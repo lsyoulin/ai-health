@@ -1,0 +1,190 @@
+.page-analyze {
+  min-height: 100vh;
+  padding: 32px;
+  padding-bottom: 120px;
+
+  .page-header {
+    margin-bottom: 32px;
+
+    .page-title {
+      font-size: 48px;
+      font-weight: bold;
+      color: #1F3A2E;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .page-desc {
+      font-size: 26px;
+      color: #999;
+    }
+  }
+
+  .photo-section {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .btn-photo, .btn-manual {
+      flex: 1;
+      border-radius: 16px;
+      font-size: 28px;
+      border: none;
+
+      &::after { border: none; }
+    }
+
+    .btn-photo {
+      background: #D4A574;
+      color: #fff;
+    }
+
+    .btn-manual {
+      background: #fff;
+      color: #1F3A2E;
+      border: 2px solid #E5E5E5;
+    }
+  }
+
+  .food-list {
+    margin-bottom: 24px;
+
+    .food-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child { border-bottom: none; }
+
+      .food-name {
+        font-size: 28px;
+        color: #2C2C2C;
+      }
+
+      .food-amount {
+        font-size: 28px;
+        color: #D4A574;
+      }
+    }
+  }
+
+  .btn-analyze {
+    width: 100%;
+    background: #1F3A2E;
+    color: #D4A574;
+    border-radius: 24px;
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    border: none;
+
+    &::after { border: none; }
+  }
+
+  .result-section {
+    .result-card {
+      .result-title {
+        font-size: 32px;
+        font-weight: 600;
+        color: #1F3A2E;
+        display: block;
+        margin-bottom: 24px;
+      }
+    }
+  }
+
+  .glucose-ring {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 8px solid #4CAF50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    position: relative;
+
+    .glucose-value {
+      font-size: 72px;
+      font-weight: bold;
+    }
+
+    .glucose-unit {
+      font-size: 24px;
+      color: #999;
+    }
+
+    .risk-badge {
+      position: absolute;
+      bottom: -16px;
+      font-size: 24px;
+      padding: 4px 16px;
+      border-radius: 12px;
+      background: #fff;
+      border: 2px solid;
+    }
+  }
+
+  .range-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 16px;
+
+    .range-label {
+      font-size: 26px;
+      color: #999;
+    }
+
+    .range-value {
+      font-size: 26px;
+      color: #2C2C2C;
+      font-weight: 500;
+    }
+  }
+
+  .nutrition-row {
+    display: flex;
+    margin-bottom: 24px;
+
+    .nutrition-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .nutrition-value {
+      font-size: 32px;
+      font-weight: 600;
+      color: #1F3A2E;
+      display: block;
+    }
+
+    .nutrition-label {
+      font-size: 22px;
+      color: #999;
+    }
+  }
+
+  .advice-box {
+    background: rgba(212, 165, 116, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+
+    .advice-label {
+      font-size: 26px;
+      font-weight: 600;
+      color: #D4A574;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .advice-text {
+      font-size: 26px;
+      color: #666;
+      line-height: 1.6;
+    }
+  }
+}

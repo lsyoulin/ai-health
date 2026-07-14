@@ -1,0 +1,133 @@
+// 知食后端 Prisma Schema
+// 文档：https://prisma.io/docs
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ 用户 ============
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  nickname     String?
+  birthYear    Int?
+  gender       String?  // male | female | other
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  personas    Persona[]
+  foodRecords FoodRecord[]
+
+  @@index([email])
+}
+
+// ============ 慢病 Persona ============
+model Persona {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String  // "我的糖尿病 Persona" / "父亲"
+  relation  String   // self | parent | spouse | other
+  condition String   // diabetes | hypertension | diabetes_hypertension | healthy
+  stage     String?  // 疾病阶段（如 type2_mild）
+  // 目标值（JSON）
+  bloodGlucoseTarget  Json? // { fasting: 7, postprandial: 10 }
+  bloodPressureTarget Json? // { systolic: 130, diastolic: 80 }
+  // 当前用药（仅记录，不做交互）
+  medications String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  foodRecords FoodRecord[]
+
+  @@index([userId])
+}
+
+// ============ 食物库 ============
+model Food {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  category    String  // 主食 | 蔬菜 | 肉类 | 水果 | 蛋类 | 奶类 | 豆类 | 坚果 | 调味 | 其他
+  subcategory String? // 如 "米饭类"、"叶菜类"
+  // 营养成分（每 100g）
+  energyKcal  Float
+  carbsG      Float
+  proteinG    Float
+  fatG        Float
+  fiberG      Float?  // 膳食纤维
+  sodiumMg    Float?  // 钠
+  potassiumMg Float?  // 钾
+  // 血糖生成
+  gi          Int?    // glycemic index 0-100
+  gl          Float?  // glycemic load
+  // 默认分量
+  defaultPortionG Float @default(100)
+  // 数据来源
+  source      String? // "中国食物成分表 v6" / "USDA"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  recordItems FoodRecordItem[]
+
+  @@index([category])
+  @@index([name])
+}
+
+// ============ 饮食记录 ============
+model FoodRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  personaId String?
+  persona   Persona? @relation(fields: [personaId], references: [id])
+  mealType  String   // breakfast | lunch | dinner | snack
+  mealTime  DateTime
+  // 预测结果
+  predictedGlucose      Float?
+  predictedGlucoseRange Json?  // { min: 7.5, max: 9.2 }
+  actualGlucose         Float?  // 用户事后输入的实际值
+  // 优化建议（JSON）
+  optimization Json?
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  items FoodRecordItem[]
+
+  @@index([userId])
+  @@index([personaId])
+  @@index([mealTime])
+}
+
+model FoodRecordItem {
+  id       String @id @default(cuid())
+  recordId String
+  record   FoodRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  foodId   String
+  food     Food       @relation(fields: [foodId], references: [id])
+  amountG  Float      // 实际摄入克数
+  order    Int        // 进餐顺序（1, 2, 3）
+
+  @@index([recordId])
+  @@index([foodId])
+}
+
+// ============ 知识卡 ============
+model KnowledgeCard {
+  id         String   @id @default(cuid())
+  title      String
+  category   String   // diabetes | hypertension | general
+  type       String   // mechanism | food | complication | emergency | daily
+  content    String   // markdown
+  sourceRef  String?  // 引用来源
+  durationSec Int     @default(30)
+  createdAt  DateTime @default(now())
+
+  @@index([category])
+  @@index([type])
+}

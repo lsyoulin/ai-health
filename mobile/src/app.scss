@@ -1,0 +1,62 @@
+// 知食全局样式
+// 设计系统：温暖琥珀金(#D4A574) + 深墨绿(#1F3A2E) + 米白底(#FAF7F2)
+
+$color-primary: #D4A574;     // 琥珀金
+$color-primary-dark: #B8895A;
+$color-dark: #1F3A2E;        // 深墨绿
+$color-dark-light: #2D5240;
+$color-bg: #FAF7F2;          // 米白底
+$color-card: #FFFFFF;
+$color-text: #2C2C2C;
+$color-text-light: #999999;
+$color-text-secondary: #666666;
+$color-border: #E5E5E5;
+$color-success: #4CAF50;
+$color-warning: #FF9800;
+$color-danger: #F44336;
+
+$radius-sm: 8px;
+$radius-md: 16px;
+$radius-lg: 24px;
+
+$spacing-xs: 8px;
+$spacing-sm: 12px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+page {
+  background-color: $color-bg;
+  color: $color-text;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  font-size: 28px;
+  line-height: 1.6;
+}
+
+// 通用卡片
+.card {
+  background: $color-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+// 通用按钮
+.btn-primary {
+  background: $color-primary;
+  color: $color-card;
+  border-radius: $radius-lg;
+  padding: $spacing-sm $spacing-lg;
+  font-size: 28px;
+  text-align: center;
+  border: none;
+
+  &::after {
+    border: none;
+  }
+}
+
+// 隐藏滚动条
+::-webkit-scrollbar {
+  display: none;
+}

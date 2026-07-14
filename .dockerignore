@@ -1,0 +1,16 @@
+# Docker 忽略文件
+node_modules
+dist
+.git
+.trae
+*.md
+!server/README.md
+.env
+.env.local
+.env.*.local
+*.log
+.vscode
+.idea
+coverage
+.turbo
+tsconfig.tsbuildinfo

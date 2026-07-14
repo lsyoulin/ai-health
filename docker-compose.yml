@@ -1,0 +1,77 @@
+# 知食 Docker Compose - 本地开发
+# 启动：docker compose up
+# 重建：docker compose up --build
+# 仅 db：docker compose up -d db
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: zhishi-db
+    environment:
+      POSTGRES_USER: zhishi
+      POSTGRES_PASSWORD: zhishi_dev_pwd
+      POSTGRES_DB: zhishi
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./server/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zhishi"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: zhishi-backend
+    environment:
+      DATABASE_URL: postgresql://zhishi:zhishi_dev_pwd@db:5432/zhishi?schema=public
+      JWT_SECRET: dev-secret-change-me-in-production-32chars
+      JWT_EXPIRES_IN: 7d
+      PORT: 3001
+      NODE_ENV: development
+      CORS_ORIGIN: http://localhost:5173,http://localhost:8080
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    # 启动时生成 Prisma Client + 应用迁移 + 启动 dev
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: zhishi-frontend
+    environment:
+      VITE_API_BASE: http://localhost:8080/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  # 生产模式前端预览（nginx 反代到 backend）
+  frontend-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zhishi-frontend-prod
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    profiles:
+      - prod
+
+volumes:
+  db-data:

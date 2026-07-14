@@ -1,0 +1,120 @@
+.page-coach {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #FAF7F2;
+
+  .page-header {
+    padding: 32px;
+    background: #1F3A2E;
+    border-radius: 0 0 24px 24px;
+
+    .page-title {
+      font-size: 36px;
+      font-weight: bold;
+      color: #D4A574;
+    }
+  }
+
+  .message-list {
+    flex: 1;
+    padding: 24px 32px;
+    overflow-y: auto;
+  }
+
+  .message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 12px;
+
+    &.message-user {
+      flex-direction: row-reverse;
+
+      .bubble {
+        background: #D4A574;
+        .bubble-text { color: #fff; }
+      }
+    }
+
+    &.message-assistant {
+      .bubble {
+        background: #fff;
+      }
+    }
+
+    .avatar {
+      font-size: 40px;
+      flex-shrink: 0;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: 20px 24px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+      .bubble-text {
+        font-size: 28px;
+        color: #2C2C2C;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+
+      &.typing {
+        display: flex;
+        gap: 4px;
+
+        .dot {
+          font-size: 40px;
+          color: #ccc;
+          animation: blink 1.4s infinite;
+
+          &:nth-child(2) { animation-delay: 0.2s; }
+          &:nth-child(3) { animation-delay: 0.4s; }
+        }
+      }
+    }
+  }
+
+  .input-bar {
+    display: flex;
+    gap: 16px;
+    padding: 16px 24px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background: #fff;
+    border-top: 1px solid #eee;
+    align-items: center;
+
+    .input {
+      flex: 1;
+      height: 72px;
+      background: #f5f5f5;
+      border-radius: 36px;
+      padding: 0 24px;
+      font-size: 28px;
+    }
+
+    .btn-send {
+      background: #D4A574;
+      color: #fff;
+      border-radius: 36px;
+      padding: 0 32px;
+      height: 72px;
+      line-height: 72px;
+      font-size: 28px;
+      border: none;
+
+      &::after { border: none; }
+
+      &[disabled] {
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}

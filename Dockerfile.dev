@@ -1,0 +1,15 @@
+# 知食前端 - 开发环境
+# 基于 Vite 官方镜像，热重载
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 仅拷贝 package.json，利用 docker 缓存
+COPY package.json package-lock.json* ./
+
+RUN npm ci
+
+# 源代码通过 volume 挂载（docker-compose.yml）
+EXPOSE 5173
+
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

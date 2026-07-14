@@ -39,3 +39,15 @@ Thumbs.db
 # 临时文件
 npm-install.log
 *.tmp
+
+# Taro
+.taro_cache/
+.swc/
+.rn_temp/
+.temp/
+
+# Prisma
+server/prisma/migrations/dev.db*
+
+# Docker 卷
+db-data/

@@ -1,0 +1,66 @@
+# 知食 Docker Compose - 生产部署
+# 启动：docker compose -f docker-compose.prod.yml up -d
+# 部署到阿里云/腾讯云 ECS
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: zhishi-db-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - db-data-prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # 生产不暴露端口，仅内部网络访问
+    networks:
+      - zhishi-net
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: zhishi-backend-prod
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 7d
+      PORT: 3001
+      NODE_ENV: production
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    networks:
+      - zhishi-net
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zhishi-frontend-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/prod.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - zhishi-net
+    depends_on:
+      - backend
+
+volumes:
+  db-data-prod:
+
+networks:
+  zhishi-net:
+    driver: bridge
