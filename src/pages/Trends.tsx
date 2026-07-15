@@ -1,6 +1,7 @@
 import { useStore } from '../store/useStore'
 import { getPersonaById } from '../data/foods'
 import PersonaBadge from '../components/PersonaBadge'
+import DisclaimerBanner from '../components/DisclaimerBanner'
 import { Link } from 'react-router-dom'
 
 /**
@@ -115,6 +116,11 @@ export default function Trends() {
           </li>
         </ul>
       </section>
+
+      {/* 免责声明 */}
+      <div className="mt-6">
+        <DisclaimerBanner />
+      </div>
     </div>
   )
 }

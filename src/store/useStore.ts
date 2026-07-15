@@ -53,7 +53,20 @@ export interface AnalysisResult {
   suggestions: string[]        // 多条建议
 }
 
+// 后端用户信息
+interface BackendUser {
+  id: string
+  email: string
+  nickname?: string
+}
+
 interface AppState {
+  // 认证状态（W9-10 新增）
+  token: string | null
+  user: BackendUser | null
+  setAuth: (token: string, user: BackendUser) => void
+  logout: () => void
+
   // 当前选中的Persona
   currentPersonaId: string
   setCurrentPersona: (id: string) => void
@@ -76,6 +89,12 @@ interface AppState {
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
+      // 认证（W9-10 新增）
+      token: null,
+      user: null,
+      setAuth: (token, user) => set({ token, user }),
+      logout: () => set({ token: null, user: null }),
+
       currentPersonaId: 'diabetes_t2',
       setCurrentPersona: (id) => set({ currentPersonaId: id }),
 

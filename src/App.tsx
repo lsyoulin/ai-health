@@ -8,6 +8,7 @@ import Parent from './pages/Parent'
 import Coach from './pages/Coach'
 import Trends from './pages/Trends'
 import Legal from './pages/Legal'
+import Auth from './pages/Auth'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/trends" element={<Trends />} />
         <Route path="/legal/:docType" element={<Legal />} />
         <Route path="/legal" element={<Legal />} />
+        <Route path="/auth" element={<Auth />} />
       </Routes>
     </Layout>
   )

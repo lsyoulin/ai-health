@@ -1,15 +1,49 @@
+import { useState, useEffect } from 'react'
 import { useStore } from '../store/useStore'
 import { FOODS, getFoodById, getPersonaById } from '../data/foods'
+import { analyzeFoodBackend } from '../lib/api'
 import { analyzeFood } from '../lib/healthEngine'
 import PredictionRing from '../components/PredictionRing'
 import PersonaBadge from '../components/PersonaBadge'
+import DisclaimerBanner from '../components/DisclaimerBanner'
 import { Link } from 'react-router-dom'
 
+/**
+ * 知食 · 拍照分析页
+ *
+ * W9-10 集成：优先调用后端 /api/optimize，后端不可用时降级到本地 healthEngine。
+ */
 export default function Analyze() {
   const { currentPersonaId, currentFoodId, setCurrentFood } = useStore()
   const persona = getPersonaById(currentPersonaId)!
   const food = getFoodById(currentFoodId || 'beef_noodle')!
-  const result = analyzeFood(food, persona)
+
+  const [result, setResult] = useState(() => analyzeFood(food, persona))
+  const [disclaimer, setDisclaimer] = useState<{ text: string; version: string; docType: string } | undefined>(undefined)
+  const [loading, setLoading] = useState(false)
+
+  // 食物或 Persona 变化时重新分析
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    analyzeFoodBackend(food, persona)
+      .then(({ result: r, disclaimer: d }) => {
+        if (!cancelled) {
+          setResult(r)
+          setDisclaimer(d)
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setResult(analyzeFood(food, persona))
+          setLoading(false)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [food, persona])
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
@@ -67,12 +101,17 @@ export default function Analyze() {
             </h3>
             <p className="text-xs text-moss-500 mb-4">{food.description}</p>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center relative">
               <PredictionRing
                 value={result.predictedGlucose}
                 level={result.riskLevel}
                 size={180}
               />
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-xs text-moss-500 animate-pulse">分析中...</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -154,6 +193,9 @@ export default function Analyze() {
           </div>
         </div>
       </section>
+
+      {/* 免责声明 */}
+      <DisclaimerBanner disclaimer={disclaimer} />
     </div>
   )
 }

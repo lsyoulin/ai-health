@@ -753,3 +753,53 @@ TRAE AI 创造力大赛
   2. 前端注册流程嵌入 RegisterConsent 组件（目前 demo 模式直接进入，需新增登录注册页）
   3. 前端 DisclaimerBanner 集成到 Analyze/Simulate/Trends 页面底部
   4. 移动端 Taro 项目对接 legal API
+
+### 变更 013 — W9-10 前后端集成 + 端到端流程验证
+- **变更时间**：2026-07-15
+- **变更类型**：前后端集成 + 端到端验证
+- **决策背景**：W7-8 完成合规框架后，W9-10 里程碑要求打通前后端全链路。原 Demo 用本地 healthEngine（前端纯静态计算），需迁移为调用后端 /api/optimize（含食物库 + 组合优化器算法 + 免责声明）。同时前端需新增登录注册页嵌入 RegisterConsent 组件，落地 PIPL 合规流程。
+- **前端 API 适配层**（`src/lib/api.ts` 新建）：
+  - `FOOD_COMPOSITION` — 前端 food.id（如 `beef_noodle`）→ 后端食物组合映射（如 `[{name:'牛肉面', amountG:400}]`），解决前后端食物粒度差异
+  - `initBackendData()` — 启动时加载后端食物库建立 name→id 映射，供后续菜品组合查询
+  - `analyzeFoodBackend(food, persona)` — 优先后端 `/api/optimize`，失败降级本地 `analyzeFood`
+  - `simulateAdjustmentBackend(food, persona, adjustment)` — 优先后端 `/api/optimize/simulate`，失败降级本地
+  - `getDisclaimer()` — 单独获取免责声明（供页面静态展示用）
+  - 降级策略：后端不可用时自动回退 healthEngine，并在 UI 显示"后端不可用，使用本地简化引擎"警告
+- **页面迁移**：
+  - `src/pages/Analyze.tsx` 重写 — 食物/persona 变化时 useEffect 触发 `analyzeFoodBackend()`，loading 态 + disclaimer 态管理，底部 DisclaimerBanner
+  - `src/pages/Simulate.tsx` 重写 — 滑块变化 300ms 防抖调用 `simulateAdjustmentBackend()`，血糖曲线对比图（baseline vs adjusted），后端不可用警告，底部 DisclaimerBanner
+  - `src/pages/Trends.tsx` 修改 — 底部添加 DisclaimerBanner（保持原 Demo 数据，仅接入免责声明）
+- **认证流程**：
+  - `src/store/useStore.ts` 扩展 — 新增 token + BackendUser（id/email/nickname）状态 + setAuth/logout action
+  - `src/pages/Auth.tsx` 新建 — 登录/注册模式切换；注册时必须勾选 3 份合规文档（PIPL 第 29 条）；注册成功后自动调用 `/api/legal/agree` 记录同意；Demo 账号快捷登录（demo@zhishi.com / demo123456）
+- **路由扩展**（`src/App.tsx`）— 新增 `/auth`、`/legal`、`/legal/:docType` 路由
+- **端到端流程验证**（6 步全部通过）：
+  1. 注册新用户 `test_e2e@zhishi.com` ✅
+  2. 获取合规文档列表（3 份必需）✅
+  3. 用户同意合规文档（3 条审计记录）✅
+  4. 检查同意状态 `allAgreed: true` ✅
+  5. 调用 `POST /api/optimize`（白米饭 200g）✅ — 预测血糖 13.6 mmol/L（danger），优化后降至 10.1 mmol/L（warning），附 2 条优化建议（替换主食 + 增加蔬菜），disclaimer 完整附带
+  6. 调用 `POST /api/optimize/simulate`（碳水减 33% + 运动 20 分钟）✅ — baseline 13.6 → adjusted 10.2 mmol/L，运动降糖 1.2 mmol/L，总改善 3.4 mmol/L
+  - 响应头验证：`X-Disclaimer-Version: 1.0.0` ✅（免责声明中间件正常工作）
+- **新增文件**：
+  - `src/lib/api.ts` — 前端 API 适配层（食物映射 + 降级策略）
+  - `src/pages/Auth.tsx` — 登录/注册页（嵌入 RegisterConsent）
+- **修改文件**：
+  - `src/pages/Analyze.tsx` — 迁移到后端 API + 集成 DisclaimerBanner
+  - `src/pages/Simulate.tsx` — 迁移到后端 API + 防抖调用 + 血糖对比图 + DisclaimerBanner
+  - `src/pages/Trends.tsx` — 底部添加 DisclaimerBanner
+  - `src/store/useStore.ts` — 新增认证状态（token/user/setAuth/logout）
+  - `src/App.tsx` — 新增 /auth、/legal、/legal/:docType 路由
+- **验证结果**：
+  - 前端 TypeScript 编译通过（`npx tsc --noEmit` 退出码 0）
+  - 后端 API 全部端点正常响应
+  - 6 步端到端流程全部通过
+  - PowerShell JSON 序列化陷阱已绕过（直接构造 JSON 字符串传入 `-Body` 参数，避免 `@(@{...}) | ConvertTo-Json` 单元素数组被序列化为对象的 bug）
+- **影响范围**：
+  - 前端主流程从"纯本地计算"升级为"后端 API 优先 + 本地降级"，提升算法精度（组合优化器 > 单品规则）
+  - 合规流程端到端打通：注册 → 同意 → 分析 → 推演 → 免责声明展示
+  - 为 W11-12 移动端 Taro 对接后端 API 奠定基础
+- **待完成**（移交 W11-12）：
+  1. 移动端 Taro 项目对接 legal/optimize API（W11-12 里程碑）
+  2. 登录态路由保护（当前 /auth 为独立页，未做未登录跳转）
+  3. 前端 Persona 创建/切换对接后端 /api/personas（当前仍用本地预置数据）

@@ -1,9 +1,12 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useStore } from '../store/useStore'
 import { getFoodById, getPersonaById } from '../data/foods'
+import { simulateAdjustmentBackend, type SimulateResult } from '../lib/api'
 import { analyzeFood, simulateAdjustment } from '../lib/healthEngine'
+import { getRiskLevel } from '../store/useStore'
 import PredictionRing from '../components/PredictionRing'
 import PersonaBadge from '../components/PersonaBadge'
+import DisclaimerBanner from '../components/DisclaimerBanner'
 import { Link } from 'react-router-dom'
 
 /**
@@ -11,6 +14,8 @@ import { Link } from 'react-router-dom'
  * 饮食决策推演 — 医疗级 AI 感
  *
  * 滑块调整分量/搭配/运动，实时看血糖曲线变化
+ *
+ * W9-10 集成：优先调用后端 /api/optimize/simulate，后端不可用时降级到本地 healthEngine。
  */
 export default function Simulate() {
   const { currentPersonaId, currentFoodId } = useStore()
@@ -21,15 +26,62 @@ export default function Simulate() {
   const [addVegetable, setAddVegetable] = useState(false)
   const [exercise, setExercise] = useState(0) // 0-60 分钟
 
+  // 基线（不调整）：本地计算，避免每次滑块都调用后端
   const baseline = useMemo(() => analyzeFood(food, persona), [food, persona])
-  const adjusted = useMemo(
-    () => simulateAdjustment(food, persona, {
-      carbReduction,
-      addVegetable,
-      exercise,
-    }),
-    [food, persona, carbReduction, addVegetable, exercise]
-  )
+
+  // 调整后：调用后端推演
+  const [adjusted, setAdjusted] = useState<SimulateResult>(() => ({
+    predictedGlucose: baseline.predictedGlucose,
+    delta: 0,
+    exerciseDelta: 0,
+    riskLevel: baseline.riskLevel,
+  }))
+  const [disclaimer, setDisclaimer] = useState<{ text: string; version: string; docType: string } | undefined>(undefined)
+  const [loading, setLoading] = useState(false)
+  const [useBackend, setUseBackend] = useState(true)
+
+  // 滑块变化时调用后端推演（防抖 300ms）
+  useEffect(() => {
+    let cancelled = false
+    const timer = setTimeout(() => {
+      setLoading(true)
+      simulateAdjustmentBackend(food, persona, {
+        carbReduction,
+        addVegetable,
+        exercise,
+      })
+        .then((r) => {
+          if (!cancelled) {
+            setAdjusted(r)
+            setDisclaimer(r.disclaimer)
+            setUseBackend(true)
+            setLoading(false)
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            // 降级到本地
+            const local = simulateAdjustment(food, persona, {
+              carbReduction,
+              addVegetable,
+              exercise,
+            })
+            setAdjusted({
+              predictedGlucose: local.predictedGlucose,
+              delta: local.delta,
+              exerciseDelta: local.exerciseDelta,
+              riskLevel: getRiskLevel(local.predictedGlucose),
+            })
+            setUseBackend(false)
+            setLoading(false)
+          }
+        })
+    }, 300)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [food, persona, carbReduction, addVegetable, exercise])
 
   // 生成血糖曲线数据（模拟）
   const baselineCurve = generateGlucoseCurve(persona.fastingGlucose, baseline.predictedGlucose)
@@ -45,12 +97,20 @@ export default function Simulate() {
         <p className="text-sm text-moss-500 mt-1">
           拖动滑块，实时看血糖曲线如何变化 — 医疗级 AI 推理
         </p>
+        {!useBackend && (
+          <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+            ⚠️ 后端不可用，当前使用本地简化引擎
+          </div>
+        )}
       </header>
 
       {/* 当前状态 */}
       <div className="flex items-center gap-3 mb-6">
         <PersonaBadge type={persona.type} />
         <span className="text-sm text-moss-700">{food.emoji} {food.name}</span>
+        {loading && (
+          <span className="text-xs text-moss-500 animate-pulse">推演中...</span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -131,7 +191,7 @@ export default function Simulate() {
                 <div className="text-xs text-amber-700 mb-2 font-semibold">调整后</div>
                 <PredictionRing
                   value={adjusted.predictedGlucose}
-                  level={getRiskLevelFromGlucose(adjusted.predictedGlucose)}
+                  level={adjusted.riskLevel}
                   size={120}
                   animate={false}
                   key={`${carbReduction}-${addVegetable}-${exercise}`}
@@ -171,6 +231,11 @@ export default function Simulate() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* 免责声明 */}
+      <div className="mt-6">
+        <DisclaimerBanner disclaimer={disclaimer} />
       </div>
     </div>
   )
@@ -286,10 +351,4 @@ function GlucoseCurve({ baseline, adjusted }: { baseline: number[]; adjusted: nu
       </g>
     </svg>
   )
-}
-
-function getRiskLevelFromGlucose(glucose: number): 'safe' | 'warning' | 'danger' {
-  if (glucose < 8.0) return 'safe'
-  if (glucose < 11.1) return 'warning'
-  return 'danger'
 }
