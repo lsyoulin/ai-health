@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import Analyze from './pages/Analyze'
 import Persona from './pages/Persona'
@@ -14,9 +15,9 @@ function App() {
   return (
     <Layout>
       <Routes>
+        {/* 公开路由（Demo 体验核心路径） */}
         <Route path="/" element={<Home />} />
         <Route path="/analyze" element={<Analyze />} />
-        <Route path="/persona" element={<Persona />} />
         <Route path="/simulate" element={<Simulate />} />
         <Route path="/parent" element={<Parent />} />
         <Route path="/coach" element={<Coach />} />
@@ -24,6 +25,16 @@ function App() {
         <Route path="/legal/:docType" element={<Legal />} />
         <Route path="/legal" element={<Legal />} />
         <Route path="/auth" element={<Auth />} />
+
+        {/* 受保护路由（需登录） */}
+        <Route
+          path="/persona"
+          element={
+            <ProtectedRoute>
+              <Persona />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Layout>
   )

@@ -1,0 +1,154 @@
+// 合规文档页样式
+// 设计系统：深墨绿 #1F3A2E + 暖色 #D4A574 + 纸张色 #FAF7F2
+.page-legal {
+  min-height: 100vh;
+  background: #FAF7F2;
+  padding-bottom: 80px;
+
+  // 顶部导航条
+  .legal-header {
+    display: flex;
+    align-items: center;
+    padding: 32px;
+    padding-top: 48px;
+    background: #1F3A2E;
+    border-radius: 0 0 32px 32px;
+    gap: 16px;
+
+    .back-btn {
+      font-size: 56px;
+      color: #D4A574;
+      line-height: 1;
+      width: 56px;
+      text-align: center;
+    }
+
+    .header-title {
+      flex: 1;
+      font-size: 36px;
+      font-weight: 600;
+      color: #fff;
+    }
+  }
+
+  .legal-body {
+    padding: 32px;
+  }
+
+  // 加载与错误
+  .loading-text {
+    display: block;
+    text-align: center;
+    font-size: 28px;
+    color: #999;
+    padding: 80px 0;
+  }
+
+  .error-text {
+    display: block;
+    text-align: center;
+    font-size: 28px;
+    color: #F44336;
+    padding: 80px 32px;
+  }
+
+  // 文档元信息卡
+  .doc-meta {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+    .doc-title {
+      font-size: 36px;
+      font-weight: bold;
+      color: #1F3A2E;
+      display: block;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-top: 1px solid #f0f0f0;
+
+      &:first-of-type {
+        border-top: 1px solid #f0f0f0;
+      }
+
+      .meta-label {
+        font-size: 26px;
+        color: #999;
+      }
+
+      .meta-value {
+        font-size: 26px;
+        color: #D4A574;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // 正文内容
+  .doc-content {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+    .md-h2 {
+      font-size: 32px;
+      font-weight: bold;
+      color: #1F3A2E;
+      display: block;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      line-height: 1.4;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+
+    .md-h3 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #2D5240;
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .md-p {
+      font-size: 26px;
+      color: #2C2C2C;
+      display: block;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .md-li {
+      display: flex;
+      align-items: flex-start;
+      padding: 6px 0;
+
+      .li-bullet {
+        font-size: 28px;
+        color: #D4A574;
+        margin-right: 12px;
+        line-height: 1.7;
+      }
+
+      .li-text {
+        flex: 1;
+        font-size: 26px;
+        color: #2C2C2C;
+        line-height: 1.7;
+      }
+    }
+  }
+}

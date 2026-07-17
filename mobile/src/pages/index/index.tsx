@@ -19,10 +19,10 @@ export default function Index() {
 
   const loadData = async () => {
     try {
-      const data = await personaApi.list()
-      setPersonas(data)
-      if (data.length > 0 && !currentPersona) {
-        setCurrentPersona(data[0])
+      const res = await personaApi.list()
+      setPersonas(res.personas)
+      if (res.personas.length > 0 && !currentPersona) {
+        setCurrentPersona(res.personas[0])
       }
     } catch (e) {
       console.error('加载数据失败', e)

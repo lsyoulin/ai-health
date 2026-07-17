@@ -172,6 +172,7 @@
     background: rgba(212, 165, 116, 0.08);
     border-radius: 12px;
     padding: 20px;
+    margin-bottom: 16px;
 
     .advice-label {
       font-size: 26px;
@@ -185,6 +186,115 @@
       font-size: 26px;
       color: #666;
       line-height: 1.6;
+      display: block;
+      margin-top: 6px;
+    }
+  }
+
+  // 食物选择网格
+  .food-picker {
+    margin-bottom: 24px;
+
+    .section-title {
+      font-size: 30px;
+      font-weight: 600;
+      color: #1F3A2E;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    .food-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .food-chip {
+      flex: 0 0 calc(50% - 6px);
+      box-sizing: border-box;
+      padding: 14px 16px;
+      background: #FAF7F2;
+      border: 2px solid #E5E5E5;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .chip-name {
+        font-size: 26px;
+        color: #2C2C2C;
+      }
+
+      .chip-amount {
+        font-size: 22px;
+        color: #999;
+      }
+
+      &.selected {
+        background: rgba(212, 165, 116, 0.12);
+        border-color: #D4A574;
+
+        .chip-name {
+          color: #1F3A2E;
+          font-weight: 600;
+        }
+
+        .chip-amount {
+          color: #D4A574;
+        }
+      }
+    }
+  }
+
+  // 已选食物标题
+  .food-list {
+    .section-title {
+      font-size: 30px;
+      font-weight: 600;
+      color: #1F3A2E;
+      display: block;
+      margin-bottom: 8px;
+    }
+  }
+
+  // 加载中提示
+  .loading-tip {
+    text-align: center;
+    padding: 16px 0;
+
+    .loading-text {
+      font-size: 26px;
+      color: #999;
+    }
+  }
+
+  // 错误降级提示
+  .error-text {
+    font-size: 28px;
+    color: #F44336;
+    text-align: center;
+    display: block;
+    padding: 16px 0;
+  }
+
+  // 简化版免责声明
+  .disclaimer-box {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #E5E5E5;
+
+    .disclaimer-text {
+      font-size: 22px;
+      color: #999;
+      line-height: 1.6;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .disclaimer-link {
+      font-size: 24px;
+      color: #D4A574;
+      font-weight: 500;
     }
   }
 }

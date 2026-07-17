@@ -34,8 +34,8 @@ export default function PersonaPage() {
 
   const load = async () => {
     try {
-      const data = await personaApi.list()
-      setPersonas(data)
+      const res = await personaApi.list()
+      setPersonas(res.personas)
     } catch (e) {
       console.error('加载失败', e)
     }
@@ -134,9 +134,10 @@ export default function PersonaPage() {
               mode='selector'
               range={RELATIONS.map(r => r.label)}
               onChange={(e) => {
+                const idx = Number(e.detail.value)
                 setForm({
                   ...form,
-                  relation: RELATIONS[e.detail.value].value,
+                  relation: RELATIONS[idx].value,
                 })
               }}
             >
@@ -153,9 +154,10 @@ export default function PersonaPage() {
               mode='selector'
               range={CONDITIONS.map(c => c.label)}
               onChange={(e) => {
+                const idx = Number(e.detail.value)
                 setForm({
                   ...form,
-                  condition: CONDITIONS[e.detail.value].value,
+                  condition: CONDITIONS[idx].value,
                 })
               }}
             >

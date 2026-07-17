@@ -20,10 +20,10 @@ export default function Profile() {
 
   const loadUser = async () => {
     try {
-      const u = await authApi.me()
-      setUser(u)
-      const ps = await personaApi.list()
-      setPersonas(ps)
+      const meRes = await authApi.me()
+      setUser(meRes.user)
+      const psRes = await personaApi.list()
+      setPersonas(psRes.personas)
     } catch (e) {
       console.error('加载用户信息失败', e)
       setToken(null)
@@ -157,24 +157,24 @@ export default function Profile() {
 
       {/* 功能入口 */}
       <View className='menu-section'>
-        <View className='menu-item'>
+        <View className='menu-item' onClick={() => Taro.navigateTo({ url: '/pages/legal/index?docType=user_agreement' })}>
           <Text className='menu-icon'>📋</Text>
           <Text className='menu-text'>用户协议</Text>
           <Text className='menu-arrow'>›</Text>
         </View>
-        <View className='menu-item'>
+        <View className='menu-item' onClick={() => Taro.navigateTo({ url: '/pages/legal/index?docType=privacy_policy' })}>
           <Text className='menu-icon'>🔒</Text>
           <Text className='menu-text'>隐私政策</Text>
           <Text className='menu-arrow'>›</Text>
         </View>
-        <View className='menu-item'>
+        <View className='menu-item' onClick={() => Taro.navigateTo({ url: '/pages/legal/index?docType=disclaimer' })}>
           <Text className='menu-icon'>⚠️</Text>
           <Text className='menu-text'>免责声明</Text>
           <Text className='menu-arrow'>›</Text>
         </View>
-        <View className='menu-item'>
+        <View className='menu-item' onClick={() => Taro.navigateTo({ url: '/pages/legal/index?docType=health_consent' })}>
           <Text className='menu-icon'>ℹ️</Text>
-          <Text className='menu-text'>关于知食</Text>
+          <Text className='menu-text'>健康同意书</Text>
           <Text className='menu-arrow'>›</Text>
         </View>
       </View>

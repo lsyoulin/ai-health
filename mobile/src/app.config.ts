@@ -5,7 +5,8 @@ export default defineAppConfig({
     'pages/records/index',
     'pages/coach/index',
     'pages/profile/index',
-    'pages/persona/index'
+    'pages/persona/index',
+    'pages/legal/index'
   ],
   window: {
     backgroundTextStyle: 'light',

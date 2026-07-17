@@ -803,3 +803,89 @@ TRAE AI 创造力大赛
   1. 移动端 Taro 项目对接 legal/optimize API（W11-12 里程碑）
   2. 登录态路由保护（当前 /auth 为独立页，未做未登录跳转）
   3. 前端 Persona 创建/切换对接后端 /api/personas（当前仍用本地预置数据）
+
+### 变更 014 — W11-12 前后端深度集成 + Taro 移动端对接
+- **变更时间**：2026-07-17
+- **变更类型**：API 层修复 + 路由保护 + 移动端集成
+- **决策背景**：W9-10 完成基础集成后，W11-12 里程碑要求移动端 Taro 对接 legal/optimize API，同时补全登录态路由保护。调研发现 shared/api/client.ts 存在 9 处 API 返回值类型与后端实际响应不匹配的 bug（遗留自 W5-6 shared 层初次创建），需先修复再集成。
+- **修复 shared/api/client.ts 的 9 处类型 bug**（首要任务，Web + Taro 共用层）：
+  | API | 修复前返回类型 | 后端实际返回 | 修复后 |
+  |-----|--------------|------------|--------|
+  | `authApi.me()` | `User` | `{user: User}` | `{user: User}` |
+  | `personaApi.list()` | `Persona[]` | `{personas: Persona[]}` | `{personas: Persona[]}` |
+  | `personaApi.create()` | `Persona` | `{persona: Persona}` | `{persona: Persona}` |
+  | `personaApi.update()` | PATCH → `Persona` | PUT → `{ok: true}` | PUT → `{ok: boolean}` |
+  | `foodApi.list()` | `Food[]` | `{foods: Food[]}` | `{foods: Food[]}` |
+  | `foodApi.get()` | `Food` | `{food: Food}` | `{food: Food}` |
+  | `recordApi.list()` | `FoodRecord[]` | `{records: FoodRecord[]}` | `{records: FoodRecord[]}` |
+  | `recordApi.get()` | `FoodRecord` | `{record: FoodRecord}` | `{record: FoodRecord}` |
+  | `recordApi.create()` | `FoodRecord` | `{record, disclaimer}` | `{record: FoodRecord; disclaimer?: Disclaimer}` |
+  - `optimizeApi.optimize` 和 `simulate` 响应类型补全 disclaimer 字段
+  - 新增 `OptimizeResponse` 和 `SimulateApiResult` 接口导出
+  - `foodApi.list()` 参数从 `search` 改为 `q`（与后端实际 query 参数一致），新增 `limit` 参数
+  - `request<T>` 方法的 method 类型补 `PUT`
+  - Taro 动态导入改为 try/catch + `@ts-ignore`，避免 Web 项目编译报 `Cannot find module '@tarojs/taro'`
+- **Web 端路由保护**：
+  - 新增 `src/components/ProtectedRoute.tsx` — 检查 zustand store 的 token，未登录跳转 /auth
+  - `App.tsx` 重构路由 — 公开路由（首页/分析/推演/父母/AI教练/趋势/合规/auth）+ 受保护路由（/persona，需登录）
+  - 设计原则：Demo 评委核心体验路径保持公开，只对需要后端持久化的路由做强制登录
+- **Web 端 Auth.tsx 改用 shared client**：
+  - 替换手写 fetch 为 `authApi.register/login` + `legalApi.agree`
+  - 新增 `setSharedToken(token)` 同步 shared client 的模块级 token 状态（zustand store 和 shared client 是两套 token 存储，必须同步）
+- **Taro 移动端 analyze 页对接后端 /api/optimize**（重写 `mobile/src/pages/analyze/index.tsx`）：
+  - 调用 `foodApi.list({ limit: 50 })` 加载后端食物库，筛选主食类前 8 种供选择
+  - 选择食物后调用 `optimizeApi.optimize({ items: [{ foodId, amountG: food.defaultPortionG }] })`
+  - 展示后端返回的预测结果：血糖环（predictedGlucose + riskLevel）、营养汇总（totalNutrition）、AI 建议（suggestions 数组）
+  - 免责声明：响应有 disclaimer 字段时在结果底部展示简化版 + "查看完整声明"跳转
+  - 后端不可用降级：显示 "AI 分析暂不可用" 错误提示
+  - 保留拍照按钮 mock（AI 视觉识别暂未接入）
+- **Taro 移动端新增 Legal 合规文档页**（新建 `mobile/src/pages/legal/index.tsx`）：
+  - 通过 `useRouter()` 接收 `?docType=` 参数
+  - 调用 `legalApi.getDoc(docType)` 加载文档，返回 `{doc: LegalDoc}`
+  - 简化 markdown 渲染（## 标题 / ### 小标题 / - 列表 / 段落）
+  - 配色风格与 mobile 其他页一致（深墨绿 #1F3A2E + 暖色 #D4A574 + 纸张色 #FAF7F2）
+  - 在 `app.config.ts` 的 pages 数组末尾追加 `'pages/legal/index'`
+- **Taro 移动端 profile 菜单跳转**：
+  - 4 个菜单项从无跳转改为 `Taro.navigateTo({ url: '/pages/legal/index?docType=xxx' })`
+  - "用户协议" → user_agreement、"隐私政策" → privacy_policy、"免责声明" → disclaimer、"关于知食"改为"健康同意书" → health_consent
+- **Taro 移动端调用方适配新返回类型**：
+  - `mobile/src/pages/profile/index.tsx` — `authApi.me()` 解构 `.user`、`personaApi.list()` 解构 `.personas`
+  - `mobile/src/pages/persona/index.tsx` — `personaApi.list()` 解构 `.personas`
+  - `mobile/src/pages/index/index.tsx` — `personaApi.list()` 解构 `.personas`
+  - `mobile/src/pages/records/index.tsx` — `recordApi.list()` 解构 `.records`
+  - `mobile/src/pages/persona/index.tsx` Picker onChange — `e.detail.value` 用 `Number()` 显式转 number（修复 TS7015）
+- **后端 Prisma client 重新生成**：
+  - `cd server && npx prisma generate` — 重新生成 Prisma Client，解决 `prisma.legalDoc` 和 `prisma.userAgreement` 类型不存在的编译错误（W7-8 schema 已加但未 generate 的遗留问题）
+- **编译验证结果**：
+  - ✅ Web 端 `npx tsc --noEmit` 退出码 0（完全通过）
+  - ✅ Server 端 `npx tsc --noEmit` 退出码 0（Prisma generate 后通过）
+  - ⚠️ Taro 端剩 5 个错误，经 `git stash` 对比验证全部为预先存在的项目配置问题：
+    - 2 × `config/index.ts` chain 参数隐式 any（Taro 4.2 模板默认）
+    - 1 × `app.config.ts` h5 字段未在 AppConfig 类型（Taro 类型定义问题）
+    - 2 × rootDir 限制（mobile 项目 rootDir 是 mobile/，但 @shared/* 指向 ../shared/）
+  - 本次修复了 2 个新错误：persona Picker TS7015 + client.ts @tarojs/taro 动态导入
+- **新增文件**：
+  - `src/components/ProtectedRoute.tsx` — Web 端路由守卫
+  - `mobile/src/pages/legal/index.tsx` + `index.scss` — Taro 合规文档页
+- **修改文件**：
+  - `shared/api/client.ts` — 9 处类型修复 + Taro 动态导入优化
+  - `src/App.tsx` — 路由分组（公开 + 受保护）
+  - `src/pages/Auth.tsx` — 改用 shared client + token 同步
+  - `mobile/src/pages/analyze/index.tsx` + `index.scss` — 对接后端 /api/optimize
+  - `mobile/src/pages/profile/index.tsx` — 菜单跳转 + 适配新返回类型
+  - `mobile/src/pages/persona/index.tsx` — 适配新返回类型 + Picker 类型修复
+  - `mobile/src/pages/index/index.tsx` — 适配新返回类型
+  - `mobile/src/pages/records/index.tsx` — 适配新返回类型
+  - `mobile/src/app.config.ts` — 注册 legal 页
+- **影响范围**：
+  - Web 端登录态用户可以访问 /persona 管理后端 Persona，未登录用户跳 /auth
+  - Web 端 Auth 流程统一到 shared client，token 同步避免 401 错误
+  - Taro 移动端 analyze 页从 mock 数据升级为真实后端调用
+  - Taro 移动端合规流程打通：profile 菜单 → Legal 页 → 文档展示
+  - shared 层类型与后端严格对齐，后续两端扩展不再踩类型陷阱
+- **待完成**（移交 W13+）：
+  1. Web 端 Persona.tsx 后端化（当前仍用本地预置 PERSONAS 数据，登录用户应能查看后端 Persona）
+  2. Taro 移动端 Persona 创建流程的 bloodGlucoseTarget/bloodPressureTarget 字段录入
+  3. AI 视觉识别接入（当前拍照按钮仍为 mock）
+  4. Taro 端 rootDir 配置优化（消除 5 个预先存在的编译警告）
+  5. 部署上线前 Docker 容器自动重启策略验证

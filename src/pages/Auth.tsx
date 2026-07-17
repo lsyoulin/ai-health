@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { authApi, legalApi, setToken as setSharedToken } from '../../shared/api/client'
 import RegisterConsent from '../components/RegisterConsent'
 import Logo from '../components/Logo'
-
-const API_BASE = 'http://localhost:3001/api'
 
 /**
  * 知食 · 登录/注册页
@@ -14,6 +13,10 @@ const API_BASE = 'http://localhost:3001/api'
  * - 注册模式：邮箱 + 密码 + 必须勾选 3 份合规文档（PIPL 第 29 条要求敏感信息单独同意）
  * - 注册成功后自动调用 /legal/agree 记录用户同意
  * - 提供 demo 账号快捷登录（demo@zhishi.com / demo123456）
+ *
+ * W11-12 优化：
+ * - 改用 shared/api/client（authApi + legalApi），统一 API 调用层
+ * - 登录后同步 shared client 的 token 状态（setSharedToken）
  */
 export default function Auth() {
   const navigate = useNavigate()
@@ -27,6 +30,12 @@ export default function Auth() {
   const [consentDocIds, setConsentDocIds] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleLoginSuccess = (token: string, user: { id: string; email: string; nickname?: string }) => {
+    setSharedToken(token) // 同步 shared client 的 token
+    setAuth(token, user) // 同步 zustand store
+    navigate('/')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,46 +51,28 @@ export default function Auth() {
         }
 
         // 1. 注册
-        const regRes = await fetch(`${API_BASE}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, nickname: nickname || undefined }),
+        const regData = await authApi.register({
+          email,
+          password,
+          nickname: nickname || undefined,
         })
-        const regData = await regRes.json()
-        if (!regRes.ok) {
-          throw new Error(regData.error || '注册失败')
-        }
 
-        // 2. 记录合规同意
+        // 2. 记录合规同意（不阻塞注册流程）
         if (consentDocIds.length > 0) {
-          await fetch(`${API_BASE}/legal/agree`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${regData.token}`,
-            },
-            body: JSON.stringify({ docIds: consentDocIds, source: 'register' }),
-          }).catch((err) => {
+          setSharedToken(regData.token)
+          try {
+            await legalApi.agree({ docIds: consentDocIds, source: 'register' })
+          } catch (err) {
             console.warn('合规同意记录失败（不阻塞注册流程）:', err)
-          })
+          }
         }
 
-        setAuth(regData.token, regData.user)
+        handleLoginSuccess(regData.token, regData.user)
       } else {
         // 登录
-        const loginRes = await fetch(`${API_BASE}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        })
-        const loginData = await loginRes.json()
-        if (!loginRes.ok) {
-          throw new Error(loginData.error || '登录失败')
-        }
-        setAuth(loginData.token, loginData.user)
+        const loginData = await authApi.login({ email, password })
+        handleLoginSuccess(loginData.token, loginData.user)
       }
-
-      navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : '操作失败')
     } finally {
@@ -93,15 +84,11 @@ export default function Auth() {
     setError(null)
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'demo@zhishi.com', password: 'demo123456' }),
+      const data = await authApi.login({
+        email: 'demo@zhishi.com',
+        password: 'demo123456',
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || '登录失败')
-      setAuth(data.token, data.user)
-      navigate('/')
+      handleLoginSuccess(data.token, data.user)
     } catch (err) {
       setError(err instanceof Error ? err.message : '登录失败')
     } finally {

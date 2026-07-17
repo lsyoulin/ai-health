@@ -23,8 +23,8 @@ export default function Records() {
 
   const loadRecords = async () => {
     try {
-      const data = await recordApi.list()
-      setRecords(data)
+      const res = await recordApi.list()
+      setRecords(res.records)
     } catch (e) {
       console.error('加载记录失败', e)
     } finally {
