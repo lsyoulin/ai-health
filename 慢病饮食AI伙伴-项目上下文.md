@@ -889,3 +889,31 @@ TRAE AI 创造力大赛
   3. AI 视觉识别接入（当前拍照按钮仍为 mock）
   4. Taro 端 rootDir 配置优化（消除 5 个预先存在的编译警告）
   5. 部署上线前 Docker 容器自动重启策略验证
+
+### 变更 015 — W13+ Web 端 Persona.tsx 双源（本地预置 + 后端 Persona）
+- **变更时间**：2026-07-18
+- **变更类型**：Web 端 Persona 页面双源数据集成
+- **决策背景**：W11-12 完成移动端集成后，W13+ 待办第 1 项要求 Web 端 Persona.tsx 后端化。但前端本地预置 Persona（含 age/bmi/glucoseSensitivity 等算法系数）与后端 Persona（含 condition/relation/medications 简化字段）数据结构差异较大，直接替换会破坏 Demo 体验（评委不登录就要能体验 4 种慢病切换）。采用双源方案平衡 Demo 流畅性与后端集成。
+- **双源设计**：
+  - **默认展示**：本地预置 PERSONAS（4 种慢病身份，含完整算法系数）— Demo 评委 3 秒体验
+  - **登录用户专属**：页面顶部增加"📋 我的后端 Persona"折叠区域，调用 `personaApi.list()` 加载后端 Persona 列表
+  - **切换映射**：后端 Persona 通过 `condition` 字段映射到本地预置 Persona 的健康系数（diabetes → diabetes_t2 等），保留算法一致性
+  - **视觉区分**：后端 Persona 显示"姓名·关系"标签，本地预置显示"年龄·空腹血糖"详情
+- **技术实现**：
+  - 引入 `useState` + `useEffect` 管理后端 Persona 状态（backendPersonas/backendLoading/showBackendSection）
+  - 登录后自动同步 shared client token（`setSharedToken(token)`）
+  - 登录用户访问 /persona 时自动调用 `personaApi.list()` 拉取后端 Persona
+  - 后端 Persona 不可用时不影响默认 Demo 体验（catch 错误后只 console.warn）
+- **编译验证**：
+  - ✅ Web 端 `npx tsc --noEmit` 退出码 0
+- **修改文件**：
+  - `src/pages/Persona.tsx` — 新增后端 Persona 加载逻辑 + 顶部折叠区域 + condition 映射
+- **影响范围**：
+  - Web 端登录用户可在 /persona 页面查看并切换后端创建的 Persona
+  - 未登录用户体验不变（仍可用本地预置 4 种慢病身份切换）
+  - 为后续"后端 Persona 完全替代本地预置"奠定基础（需先统一前后端 Persona 数据结构）
+- **待完成**（移交 W14+）：
+  1. 前后端 Persona 数据结构统一（后端增加 age/bmi/glucoseSensitivity 等算法系数字段，或前端改用后端简化字段 + 本地默认系数）
+  2. 后端 Persona 完全替代本地预置（双源 → 单源后端）
+  3. Taro 移动端 Persona 创建流程的 bloodGlucoseTarget/bloodPressureTarget 字段录入
+  4. AI 视觉识别接入（当前拍照按钮仍为 mock）

@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react'
 import { useStore } from '../store/useStore'
 import { FOODS, getFoodById, getPersonaById, PERSONAS } from '../data/foods'
 import { analyzeFood } from '../lib/healthEngine'
+import { personaApi, setToken as setSharedToken } from '../../shared/api/client'
+import type { Persona as BackendPersona } from '../../shared/types'
 import PredictionRing from '../components/PredictionRing'
 import PersonaBadge from '../components/PersonaBadge'
 import { Link } from 'react-router-dom'
@@ -10,12 +13,64 @@ import { Link } from 'react-router-dom'
  * 慢病 Persona 切换器
  *
  * 同一道菜，3种慢病身份，3种AI建议 — AI 不可替代证明
+ *
+ * W13+ 双源：
+ * - 默认展示本地预置 PERSONAS（Demo 评委快速体验）
+ * - 登录用户可在顶部查看后端 Persona 列表（如有），点击切换
+ * - 通过 condition 映射到本地 Persona 的健康系数（保留算法一致性）
  */
 export default function Persona() {
-  const { currentPersonaId, setCurrentPersona, currentFoodId, setCurrentFood } = useStore()
+  const { currentPersonaId, setCurrentPersona, currentFoodId, setCurrentFood, token, user } = useStore()
   const persona = getPersonaById(currentPersonaId)!
   const food = getFoodById(currentFoodId || 'beef_noodle')!
   const result = analyzeFood(food, persona)
+
+  // 后端 Persona 状态
+  const [backendPersonas, setBackendPersonas] = useState<BackendPersona[]>([])
+  const [backendLoading, setBackendLoading] = useState(false)
+  const [showBackendSection, setShowBackendSection] = useState(false)
+
+  // 同步 shared client token
+  useEffect(() => {
+    if (token) {
+      setSharedToken(token)
+    }
+  }, [token])
+
+  // 登录用户加载后端 Persona
+  useEffect(() => {
+    if (token && user) {
+      loadBackendPersonas()
+    }
+  }, [token, user])
+
+  const loadBackendPersonas = async () => {
+    setBackendLoading(true)
+    try {
+      const res = await personaApi.list()
+      setBackendPersonas(res.personas)
+      setShowBackendSection(res.personas.length > 0)
+    } catch (err) {
+      console.warn('加载后端 Persona 失败:', err)
+    } finally {
+      setBackendLoading(false)
+    }
+  }
+
+  // 后端 Persona condition → 本地预置 Persona 映射
+  const conditionToPresetId: Record<string, string> = {
+    diabetes: 'diabetes_t2',
+    hypertension: 'hypertension',
+    diabetes_hypertension: 'diabetes_hypertension',
+    healthy: 'healthy',
+  }
+
+  const handleBackendPersonaClick = (bp: BackendPersona) => {
+    const presetId = conditionToPresetId[bp.condition]
+    if (presetId) {
+      setCurrentPersona(presetId)
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
@@ -28,6 +83,49 @@ export default function Persona() {
           切换慢病身份，看 AI 如何给出截然不同的健康预测 — 这是 AI 不可替代的核心能力
         </p>
       </header>
+
+      {/* 我的后端 Persona（登录用户专属） */}
+      {token && user && showBackendSection && (
+        <section className="mb-6 rounded-2xl bg-amber-50 border border-amber-200 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold text-moss-700">
+              📋 我的后端 Persona（{backendPersonas.length}）
+            </h3>
+            <button
+              onClick={() => setShowBackendSection(!showBackendSection)}
+              className="text-xs text-amber-700"
+            >
+              {showBackendSection ? '收起' : '展开'}
+            </button>
+          </div>
+          {backendLoading ? (
+            <div className="text-xs text-moss-500">加载中...</div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {backendPersonas.map((bp) => {
+                const presetId = conditionToPresetId[bp.condition]
+                const isActive = currentPersonaId === presetId
+                return (
+                  <button
+                    key={bp.id}
+                    onClick={() => handleBackendPersonaClick(bp)}
+                    className={`px-3 py-1.5 rounded-full text-xs border transition-all ${
+                      isActive
+                        ? 'bg-moss-700 text-paper border-moss-700'
+                        : 'bg-paper border-amber-200 text-moss-700 hover:border-amber-400'
+                    }`}
+                  >
+                    {bp.name} · {bp.relation === 'self' ? '本人' : bp.relation === 'parent' ? '父母' : bp.relation}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          <p className="text-[10px] text-moss-500 mt-2">
+            点击切换为对应慢病类型的演示数据（实际后端数据需在分析时自动调用）
+          </p>
+        </section>
+      )}
 
       {/* 菜品选择 */}
       <section className="mb-6">
@@ -49,8 +147,12 @@ export default function Persona() {
         </div>
       </section>
 
-      {/* Persona 切换器 */}
+      {/* Persona 切换器（本地预置 Demo 数据） */}
       <section className="mb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="text-sm font-semibold text-moss-700">慢病身份切换</h2>
+          <span className="text-[10px] text-moss-400">（演示数据）</span>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {PERSONAS.map((p) => (
             <button
