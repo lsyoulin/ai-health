@@ -145,6 +145,82 @@
       }
     }
 
+    .form-subsection {
+      margin-bottom: 32px;
+      padding-top: 16px;
+      border-top: 1px dashed #eee;
+
+      .subsection-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #1F3A2E;
+        display: block;
+        margin-bottom: 16px;
+      }
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+
+      .form-item {
+        flex: 1;
+        margin-bottom: 0;
+      }
+
+      .form-item-half {
+        flex: 1;
+      }
+
+      .form-input-grow {
+        flex: 1;
+      }
+    }
+
+    .btn-add-tag {
+      width: auto;
+      height: 80px;
+      padding: 0 28px;
+      margin-left: 16px;
+      background: #1F3A2E;
+      color: #D4A574;
+      border-radius: 12px;
+      font-size: 26px;
+      border: none;
+      line-height: 80px;
+
+      &::after { border: none; }
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .tag-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(212, 165, 116, 0.15);
+      border-radius: 8px;
+      padding: 6px 16px;
+
+      .tag-text {
+        font-size: 24px;
+        color: #1F3A2E;
+      }
+
+      .tag-remove {
+        font-size: 28px;
+        color: #999;
+        line-height: 1;
+        padding-left: 4px;
+      }
+    }
+
     .form-actions {
       display: flex;
       gap: 16px;

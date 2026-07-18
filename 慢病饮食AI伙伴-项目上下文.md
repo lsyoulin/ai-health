@@ -917,3 +917,51 @@ TRAE AI 创造力大赛
   2. 后端 Persona 完全替代本地预置（双源 → 单源后端）
   3. Taro 移动端 Persona 创建流程的 bloodGlucoseTarget/bloodPressureTarget 字段录入
   4. AI 视觉识别接入（当前拍照按钮仍为 mock）
+
+### 变更 016 — W14+ Taro 编译告警清零 + 移动端 Persona 表单字段完善
+- **变更时间**：2026-07-18
+- **变更类型**：移动端技术债务清理 + Persona 录入完整化
+- **决策背景**：W13+ 完成后 Taro 项目仍存在 5 个预先存在的 TypeScript 编译错误（git stash 对比确认非本次新引入），影响后续开发体验；同时移动端 Persona 表单仅录入 name/relation/condition 三字段，缺少血糖/血压控制目标与用药清单，与后端 schema 不匹配。
+- **变更一：Taro 5 个预先存在编译错误全部清零**
+  - **错误清单**：
+    1. `config/index.ts(39,20)` — `webpackChain(chain)` 隐式 any
+    2. `config/index.ts(78,20)` — 同上
+    3. `src/app.config.ts(42,3)` — `h5` 字段不在 AppConfig 类型
+    4. `src/pages/analyze/index.tsx(4,38)` — rootDir 限制（`@shared/*` 指向 `../shared/`）
+    5. `shared/api/client.ts(23,8)` — rootDir 限制（连锁触发）
+  - **修复方案**：
+    - **webpackChain 类型**：抽取为 `type WebpackChainFn = (chain: any) => void`，mini 与 h5 共用同一 `sharedWebpackChain` 函数（消除重复代码）
+    - **app.config.ts 的 h5 字段**：用 `as any` 类型断言绕过 `AppConfig` 类型未导出 `h5` 字段（Taro 运行时支持但类型定义缺失）
+    - **tsconfig.json rootDir**：移除 `rootDir: "."` 配置，并在 `include` 数组末尾追加 `"../shared"`，让 TypeScript 自动推断 rootDir 并能类型检查 shared 层文件
+  - **验证**：`npx tsc --noEmit` 退出码 0，5 个错误全部消除
+- **变更二：移动端 Persona 表单完整化**
+  - **新增字段**：
+    1. `bloodGlucoseTarget: { fasting, postprandial }` — 血糖控制目标 (mmol/L)，仅当 condition 包含 diabetes 时展示
+    2. `bloodPressureTarget: { systolic, diastolic }` — 血压控制目标 (mmHg)，仅当 condition 包含 hypertension 时展示
+    3. `medications: string[]` — 当前用药列表（标签式输入，回车或点击"添加"加入）
+  - **设计决策**：
+    - **动态展示**：通过 `showGlucoseFields(c)` 与 `showBpFields(c)` 判断函数控制血糖/血压字段的渲染，避免健康 Persona 显示无关字段
+    - **默认值映射**：`CONDITION_DEFAULTS` 在切换慢病类型时自动填充对应的临床控制目标（如糖尿病空腹 7.0 / 餐后 10.0；健康人空腹 6.1 / 餐后 7.8）
+    - **payload 裁剪**：`submit` 时根据 condition 主动剔除无关字段（`undefined`），避免后端存入 healthy Persona 的血糖目标等冗余数据
+    - **列表项增强**：Persona 列表卡片新增显示"用药 N 种 · 目标 7-10"摘要信息
+  - **样式扩展**：新增 `form-subsection`（带虚线分隔的小节容器）、`form-row`（双列布局）、`form-item-half`、`btn-add-tag`、`tag-list`、`tag-item` 等样式
+- **编译验证**：
+  - ✅ mobile `npx tsc --noEmit` 退出码 0
+  - ✅ Web `npx tsc --noEmit` 退出码 0（无影响）
+  - ✅ server `npx tsc --noEmit` 退出码 0（无影响）
+- **修改文件**：
+  - `mobile/config/index.ts` — 抽取 `sharedWebpackChain` + 类型注解
+  - `mobile/src/app.config.ts` — `as any` 类型断言
+  - `mobile/tsconfig.json` — 移除 rootDir + include 添加 `../shared`
+  - `mobile/src/pages/persona/index.tsx` — 重写，新增血糖/血压/用药表单
+  - `mobile/src/pages/persona/index.scss` — 新增子节/双列/标签样式
+- **影响范围**：
+  - Taro 项目从此 0 编译错误，可放心继续开发
+  - 移动端 Persona 录入字段与后端 `upsertSchema` 完全对齐，前后端数据结构一致性提升
+  - Web 端与 server 端无破坏性影响
+- **后续待办**（移交 W15+）：
+  1. 前后端 Persona 数据结构统一（后端增加算法系数字段，或前端改用后端字段 + 本地默认系数）
+  2. 后端 Persona 完全替代本地预置（双源 → 单源后端）
+  3. AI 视觉识别接入（当前拍照按钮仍为 mock）
+  4. Docker daemon 恢复后补做 W11-12 端到端 API 验证
+

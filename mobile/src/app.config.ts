@@ -44,4 +44,4 @@ export default defineAppConfig({
       mode: 'browser'
     }
   }
-})
+} as any)

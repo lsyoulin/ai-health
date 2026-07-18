@@ -1,9 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineConfig } from '@tarojs/cli'
 import devConfig from './dev'
 import prodConfig from './prod'
 import path from 'path'
 
+type WebpackChainFn = (chain: any) => void
+
 const sharedPath = path.resolve(__dirname, '..', '..', 'shared')
+
+const sharedWebpackChain: WebpackChainFn = (chain) => {
+  chain.resolve.alias.set('@shared', sharedPath)
+  chain.module
+    .rule('shared-ts')
+    .test(/shared[\\/].*\.(ts|tsx|js|jsx)$/)
+    .use('babel-loader')
+    .loader(require.resolve('babel-loader'))
+    .options({
+      presets: [
+        ['taro', { framework: 'react', ts: true, compiler: 'webpack5' }]
+      ]
+    })
+}
 
 export default defineConfig(async (merge) => {
   const baseConfig = {
@@ -36,19 +53,7 @@ export default defineConfig(async (merge) => {
       '@shared': sharedPath
     },
     mini: {
-      webpackChain(chain) {
-        chain.resolve.alias.set('@shared', sharedPath)
-        chain.module
-          .rule('shared-ts')
-          .test(/shared[\\/].*\.(ts|tsx|js|jsx)$/)
-          .use('babel-loader')
-          .loader(require.resolve('babel-loader'))
-          .options({
-            presets: [
-              ['taro', { framework: 'react', ts: true, compiler: 'webpack5' }]
-            ]
-          })
-      },
+      webpackChain: sharedWebpackChain,
       postcss: {
         pxtransform: {
           enable: true,
@@ -75,19 +80,7 @@ export default defineConfig(async (merge) => {
         filename: 'css/[name].[hash].css',
         chunkFilename: 'css/[name].[chunkhash].css'
       },
-      webpackChain(chain) {
-        chain.resolve.alias.set('@shared', sharedPath)
-        chain.module
-          .rule('shared-ts')
-          .test(/shared[\\/].*\.(ts|tsx|js|jsx)$/)
-          .use('babel-loader')
-          .loader(require.resolve('babel-loader'))
-          .options({
-            presets: [
-              ['taro', { framework: 'react', ts: true, compiler: 'webpack5' }]
-            ]
-          })
-      },
+      webpackChain: sharedWebpackChain,
       postcss: {
         autoprefixer: {
           enable: true,
